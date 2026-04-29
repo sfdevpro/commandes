@@ -1,625 +1,672 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Formulaire de commande</title>
+  <title>Commande produit</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body {
-      font-family: 'Segoe UI', Tahoma, sans-serif;
-      background: #f5f5f5;
-      min-height: 100vh;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      padding: 2rem 1rem;
+    /* ===== THEMES via CSS variables ===== */
+    /* Thème 1 : Classique (noir & blanc) */
+    body.theme-classic {
+      --c-bg:       #f2f2f2;
+      --c-card:     #ffffff;
+      --c-primary:  #111111;
+      --c-accent:   #111111;
+      --c-accent2:  #444444;
+      --c-text:     #111111;
+      --c-text2:    #555555;
+      --c-text3:    #888888;
+      --c-border:   #dddddd;
+      --c-input-bg: #ffffff;
+      --c-recap-bg: #f7f7f7;
+      --c-section-border: #f0f0f0;
+      --c-radio-sel:#f5f5f5;
+      --c-btn-text: #ffffff;
+      --c-tag-bg:   #e8f0fe;
+      --c-tag-text: #1a56db;
+      --c-readonly: #f7f7f7;
+    }
+    /* Thème 2 : Vert émeraude */
+    body.theme-green {
+      --c-bg:       #f0f7f4;
+      --c-card:     #ffffff;
+      --c-primary:  #0d6e4f;
+      --c-accent:   #0d6e4f;
+      --c-accent2:  #1a9e72;
+      --c-text:     #0a3d2b;
+      --c-text2:    #2d6b52;
+      --c-text3:    #7aab94;
+      --c-border:   #b8ddd0;
+      --c-input-bg: #ffffff;
+      --c-recap-bg: #e8f5ef;
+      --c-section-border: #c8e8db;
+      --c-radio-sel:#e0f5ec;
+      --c-btn-text: #ffffff;
+      --c-tag-bg:   #d4f0e4;
+      --c-tag-text: #0a6640;
+      --c-readonly: #f0f7f4;
+    }
+    /* Thème 3 : Bordeaux élégant */
+    body.theme-bordeaux {
+      --c-bg:       #faf5f5;
+      --c-card:     #ffffff;
+      --c-primary:  #7b1d1d;
+      --c-accent:   #7b1d1d;
+      --c-accent2:  #b33030;
+      --c-text:     #3d0e0e;
+      --c-text2:    #7b3535;
+      --c-text3:    #b88080;
+      --c-border:   #e0bfbf;
+      --c-input-bg: #ffffff;
+      --c-recap-bg: #fdf0f0;
+      --c-section-border: #f0d5d5;
+      --c-radio-sel:#fdf0f0;
+      --c-btn-text: #ffffff;
+      --c-tag-bg:   #fde8e8;
+      --c-tag-text: #7b1d1d;
+      --c-readonly: #fdf5f5;
     }
 
-    .card {
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 2px 16px rgba(0,0,0,0.08);
-      padding: 2rem;
-      width: 100%;
-      max-width: 520px;
+    body { background: var(--c-bg); color: var(--c-text); font-family: 'Segoe UI', Tahoma, sans-serif; transition: background 0.3s, color 0.3s; }
+
+    /* ===== BARRE FLOTTANTE ===== */
+    .topbar {
+      position: fixed; top: 12px; right: 12px; z-index: 900;
+      display: flex; gap: 8px; align-items: center;
     }
+    [dir=rtl] .topbar { right: auto; left: 12px; }
 
-    /* --- lang toggle --- */
-    .lang-bar { display: flex; justify-content: flex-end; margin-bottom: 1.5rem; }
-    .lang-toggle { display: flex; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; }
-    .lang-btn {
-      padding: 6px 18px; font-size: 13px; font-weight: 500;
-      background: transparent; border: none; cursor: pointer; color: #888;
-    }
-    .lang-btn.active { background: #111; color: #fff; }
+    .lang-toggle { display:flex; border:1px solid var(--c-border); border-radius:8px; overflow:hidden; background:var(--c-card); box-shadow:0 2px 8px rgba(0,0,0,0.12); }
+    .lang-btn { padding:7px 14px; font-size:13px; font-weight:500; background:transparent; border:none; cursor:pointer; color:var(--c-text3); }
+    .lang-btn.active { background:var(--c-primary); color:var(--c-btn-text); }
 
-    /* --- typography --- */
-    h1 { font-size: 18px; font-weight: 600; color: #111; margin-bottom: 1.5rem; }
-    label { display: block; font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 500; }
+    .theme-toggle { display:flex; border:1px solid var(--c-border); border-radius:8px; overflow:hidden; background:var(--c-card); box-shadow:0 2px 8px rgba(0,0,0,0.12); }
+    .theme-btn { width:28px; height:32px; border:none; cursor:pointer; transition:transform 0.15s; }
+    .theme-btn:hover { transform:scale(1.15); }
+    .theme-btn.t-classic  { background:#111; }
+    .theme-btn.t-green    { background:#0d6e4f; }
+    .theme-btn.t-bordeaux { background:#7b1d1d; }
+    .theme-btn.active { outline:2px solid var(--c-primary); outline-offset:1px; }
 
-    /* --- fields --- */
-    .field { margin-bottom: 14px; }
-    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+    /* ===== BANNER ===== */
+    .banner { width:100%; height:260px; position:relative; overflow:hidden; background:#222; }
+    .banner img { width:100%; height:100%; object-fit:cover; opacity:0.72; }
+    .banner-overlay { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:1rem; }
+    .banner-title { font-size:26px; font-weight:700; color:#fff; text-align:center; text-shadow:0 2px 8px rgba(0,0,0,0.5); margin-bottom:6px; }
+    .banner-sub   { font-size:14px; color:rgba(255,255,255,0.85); text-align:center; text-shadow:0 1px 4px rgba(0,0,0,0.4); }
+    .banner-price { margin-top:12px; background:var(--c-card); color:var(--c-primary); font-size:16px; font-weight:700; padding:6px 20px; border-radius:30px; }
+
+    /* ===== LAYOUT ===== */
+    .page { max-width:600px; margin:0 auto; padding:0 0 3rem; }
+    .section { background:var(--c-card); margin:12px 12px 0; border-radius:14px; padding:18px; box-shadow:0 1px 4px rgba(0,0,0,0.06); transition:background 0.3s; }
+    .section-title { font-size:14px; font-weight:700; color:var(--c-text); margin-bottom:12px; padding-bottom:8px; border-bottom:2px solid var(--c-section-border); display:flex; align-items:center; gap:8px; }
+    .section-dot { width:8px; height:8px; border-radius:50%; background:var(--c-primary); flex-shrink:0; }
+
+    /* ===== GALERIE ===== */
+    .gallery-main { width:100%; height:260px; border-radius:10px; overflow:hidden; background:#eee; margin-bottom:10px; cursor:pointer; }
+    .gallery-main img { width:100%; height:100%; object-fit:cover; transition:transform 0.3s; }
+    .gallery-main img:hover { transform:scale(1.03); }
+    .gallery-thumbs { display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; }
+    .gallery-thumbs::-webkit-scrollbar { height:3px; }
+    .gallery-thumbs::-webkit-scrollbar-thumb { background:var(--c-border); border-radius:4px; }
+    .thumb { width:70px; height:70px; border-radius:8px; overflow:hidden; flex-shrink:0; cursor:pointer; border:2px solid transparent; transition:border-color 0.15s; }
+    .thumb.active { border-color:var(--c-primary); }
+    .thumb img { width:100%; height:100%; object-fit:cover; }
+
+    /* ===== DESCRIPTION ===== */
+    .desc-text { font-size:14px; color:var(--c-text2); line-height:1.8; white-space:pre-line; }
+
+    /* ===== CONDITIONS ===== */
+    .cond-list { list-style:none; }
+    .cond-list li { font-size:13px; color:var(--c-text2); padding:7px 0; border-bottom:1px solid var(--c-section-border); display:flex; align-items:flex-start; gap:8px; line-height:1.5; }
+    .cond-list li:last-child { border-bottom:none; }
+    .cond-dot { width:6px; height:6px; border-radius:50%; background:var(--c-primary); flex-shrink:0; margin-top:6px; }
+
+    /* ===== FORM ===== */
+    h2.form-title { font-size:15px; font-weight:700; color:var(--c-text); margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+    label { display:block; font-size:12px; color:var(--c-text2); margin-bottom:5px; font-weight:500; }
+    .field { margin-bottom:14px; }
+    .row2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
 
     input[type=text], input[type=tel], select {
-      width: 100%; padding: 9px 12px; font-size: 14px; color: #111;
-      border: 1px solid #ddd; border-radius: 8px; background: #fff;
-      outline: none; transition: border-color 0.15s;
-      font-family: inherit;
+      width:100%; padding:9px 12px; font-size:14px; color:var(--c-text);
+      border:1px solid var(--c-border); border-radius:8px;
+      background:var(--c-input-bg); outline:none;
+      transition:border-color 0.15s; font-family:inherit;
     }
-    input:focus, select:focus { border-color: #111; }
-    select:disabled { background: #f9f9f9; color: #aaa; }
+    input:focus, select:focus { border-color:var(--c-primary); }
+    select:disabled { background:var(--c-readonly); color:var(--c-text3); }
+    input[type=text][readonly] { background:var(--c-readonly); color:var(--c-text3); cursor:default; border-color:var(--c-section-border); user-select:none; }
 
-    /* --- radio livraison --- */
-    .radio-group { display: flex; gap: 10px; margin-top: 4px; }
-    .radio-opt {
-      flex: 1; border: 1px solid #ddd; border-radius: 8px;
-      padding: 10px 12px; cursor: pointer; display: flex;
-      align-items: center; gap: 8px; font-size: 13px; color: #111;
-      transition: background 0.12s, border-color 0.12s;
-      user-select: none;
-    }
-    .radio-opt:hover { background: #f9f9f9; }
-    .radio-opt.selected { border: 2px solid #111; background: #f5f5f5; }
-    .radio-dot {
-      width: 14px; height: 14px; border-radius: 50%;
-      border: 2px solid #ccc; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .radio-dot.on { border-color: #111; }
-    .radio-dot.on::after {
-      content: ''; width: 7px; height: 7px;
-      border-radius: 50%; background: #111; display: block;
-    }
+    /* RADIO */
+    .radio-group { display:flex; gap:10px; margin-top:4px; }
+    .radio-opt { flex:1; border:1px solid var(--c-border); border-radius:8px; padding:10px 12px; cursor:pointer; display:flex; align-items:center; gap:8px; font-size:13px; color:var(--c-text); transition:background 0.12s; user-select:none; }
+    .radio-opt:hover { background:var(--c-recap-bg); }
+    .radio-opt.selected { border:2px solid var(--c-primary); background:var(--c-radio-sel); }
+    .radio-dot { width:14px; height:14px; border-radius:50%; border:2px solid var(--c-border); flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+    .radio-dot.on { border-color:var(--c-primary); }
+    .radio-dot.on::after { content:''; width:7px; height:7px; border-radius:50%; background:var(--c-primary); display:block; }
 
-    /* --- divider --- */
-    hr { border: none; border-top: 1px solid #eee; margin: 1.25rem 0; }
+    /* QTY */
+    .qty-wrap { display:flex; align-items:center; gap:10px; margin-top:4px; }
+    .qty-btn { width:34px; height:34px; border-radius:8px; border:1px solid var(--c-border); background:var(--c-input-bg); font-size:18px; cursor:pointer; color:var(--c-text); display:flex; align-items:center; justify-content:center; transition:background 0.12s; flex-shrink:0; font-family:inherit; }
+    .qty-btn:hover { background:var(--c-recap-bg); }
+    .qty-val { font-size:15px; font-weight:600; color:var(--c-text); min-width:32px; text-align:center; }
+    .qty-unit { font-size:12px; color:var(--c-text3); }
 
-    /* --- recap --- */
-    .recap { background: #f7f7f7; border-radius: 12px; padding: 14px 16px; margin-bottom: 1.25rem; }
-    .recap-row { display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; color: #666; }
-    .recap-row span:last-child { color: #111; font-weight: 500; }
-    .recap-total {
-      display: flex; justify-content: space-between;
-      font-size: 15px; font-weight: 600; padding-top: 10px;
-      margin-top: 6px; border-top: 1px solid #e0e0e0; color: #111;
-    }
-    .tag {
-      font-size: 11px; background: #e8f0fe; color: #1a56db;
-      padding: 2px 8px; border-radius: 20px;
-      display: inline-block; margin: 0 4px; vertical-align: middle;
-    }
+    /* RECAP */
+    hr { border:none; border-top:1px solid var(--c-section-border); margin:1.25rem 0; }
+    .recap { background:var(--c-recap-bg); border-radius:12px; padding:14px 16px; margin-bottom:1.25rem; }
+    .recap-row { display:flex; justify-content:space-between; font-size:13px; padding:4px 0; color:var(--c-text2); }
+    .recap-row span:last-child { color:var(--c-text); font-weight:500; }
+    .recap-total { display:flex; justify-content:space-between; font-size:15px; font-weight:600; padding-top:10px; margin-top:6px; border-top:1px solid var(--c-border); color:var(--c-text); }
+    .tag { font-size:11px; background:var(--c-tag-bg); color:var(--c-tag-text); padding:2px 8px; border-radius:20px; display:inline-block; margin:0 4px; vertical-align:middle; }
 
-    /* --- quantité --- */
-    .qty-wrap { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
-    .qty-btn {
-      width: 34px; height: 34px; border-radius: 8px; border: 1px solid #ddd;
-      background: #fff; font-size: 18px; cursor: pointer; color: #111;
-      display: flex; align-items: center; justify-content: center;
-      transition: background 0.12s; flex-shrink: 0; font-family: inherit;
-    }
-    .qty-btn:hover { background: #f0f0f0; }
-    .qty-val {
-      font-size: 15px; font-weight: 600; color: #111;
-      min-width: 32px; text-align: center;
-    }
-    .qty-unit { font-size: 12px; color: #888; }
+    /* ERRORS */
+    .err { font-size:12px; color:#e53935; margin-top:4px; display:none; }
+    .req { color:#e53935; }
 
-    input[type=text][readonly], input[type=tel][readonly] {
-      background: #f7f7f7; color: #888; cursor: default;
-      border-color: #eee; user-select: none;
-    }
+    /* BUTTON */
+    .btn-submit { width:100%; padding:13px; font-size:15px; font-weight:700; background:var(--c-primary); color:var(--c-btn-text); border:none; border-radius:10px; cursor:pointer; transition:opacity 0.15s; font-family:inherit; }
+    .btn-submit:hover { opacity:0.85; }
+    .btn-submit:disabled { opacity:0.45; cursor:not-allowed; }
+    .spinner { display:inline-block; width:14px; height:14px; border:2px solid rgba(255,255,255,0.4); border-top-color:#fff; border-radius:50%; animation:spin 0.7s linear infinite; vertical-align:middle; margin-right:6px; }
+    @keyframes spin { to { transform:rotate(360deg); } }
 
-    /* --- error --- */
-    .err { font-size: 12px; color: #e53935; margin-top: 4px; display: none; }
+    .init-msg { text-align:center; padding:3rem 0; color:var(--c-text3); font-size:14px; }
 
-    /* --- button --- */
-    .btn-submit {
-      width: 100%; padding: 12px; font-size: 14px; font-weight: 600;
-      background: #111; color: #fff; border: none;
-      border-radius: 10px; cursor: pointer; transition: opacity 0.15s;
-      font-family: inherit;
-    }
-    .btn-submit:hover { opacity: 0.85; }
-    .btn-submit:disabled { opacity: 0.45; cursor: not-allowed; }
+    /* SUCCESS */
+    .success { text-align:center; padding:2.5rem 1rem; display:none; }
+    .success-icon { width:56px; height:56px; border-radius:50%; background:#e6f4ea; display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; }
+    .success-icon svg { width:26px; height:26px; stroke:#2e7d32; fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+    .success-title { font-size:17px; font-weight:700; margin-bottom:8px; color:var(--c-text); }
+    .success-sub { font-size:13px; color:var(--c-text2); line-height:1.9; }
 
-    /* --- loader spinner --- */
-    .spinner {
-      display: inline-block; width: 14px; height: 14px;
-      border: 2px solid rgba(255,255,255,0.4);
-      border-top-color: #fff; border-radius: 50%;
-      animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    /* RTL */
+    [dir=rtl] { font-family:'Segoe UI',Tahoma,'Noto Naskh Arabic','Arabic Typesetting',sans-serif; }
+    [dir=rtl] .recap-row,[dir=rtl] .recap-total { flex-direction:row-reverse; }
+    [dir=rtl] .cond-list li,[dir=rtl] .section-title,[dir=rtl] .form-title { flex-direction:row-reverse; }
+    [dir=rtl] .topbar { right:auto; left:12px; }
 
-    /* --- init loader --- */
-    .init-msg { text-align: center; padding: 3rem 0; color: #888; font-size: 14px; }
+    /* LIGHTBOX */
+    .lightbox { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:999; align-items:center; justify-content:center; }
+    .lightbox.open { display:flex; }
+    .lightbox img { max-width:95vw; max-height:90vh; border-radius:8px; }
+    .lb-close { position:fixed; top:16px; right:20px; color:#fff; font-size:32px; cursor:pointer; line-height:1; }
 
-    /* --- success --- */
-    .success { text-align: center; padding: 2rem 0; display: none; }
-    .success-icon {
-      width: 52px; height: 52px; border-radius: 50%;
-      background: #e6f4ea; display: flex; align-items: center;
-      justify-content: center; margin: 0 auto 1rem;
-    }
-    .success-icon svg { width: 24px; height: 24px; stroke: #2e7d32; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
-    .success-title { font-size: 17px; font-weight: 600; margin-bottom: 8px; color: #111; }
-    .success-sub { font-size: 13px; color: #555; line-height: 1.9; }
-
-    /* --- RTL --- */
-    [dir=rtl] { font-family: 'Segoe UI', Tahoma, 'Arabic Typesetting', 'Noto Naskh Arabic', sans-serif; }
-    [dir=rtl] .lang-bar { justify-content: flex-start; }
-    [dir=rtl] .recap-row, [dir=rtl] .recap-total { flex-direction: row-reverse; }
-
-    /* --- responsive --- */
-    @media (max-width: 480px) {
-      .row2 { grid-template-columns: 1fr; }
-      .card { padding: 1.25rem; }
+    @media(max-width:480px) {
+      .row2 { grid-template-columns:1fr; }
+      .banner { height:200px; }
+      .banner-title { font-size:20px; }
+      .gallery-main { height:200px; }
+      .section { margin:10px 8px 0; padding:14px; }
+      .topbar { top:8px; right:8px; gap:6px; }
     }
   </style>
 </head>
-<body>
-<div class="card">
+<body class="theme-classic">
 
-  <!-- ===== LANGUE ===== -->
-  <div class="lang-bar">
-    <div class="lang-toggle">
-      <button class="lang-btn active" id="btnFR" onclick="setLang('fr')">FR</button>
-      <button class="lang-btn" id="btnAR" onclick="setLang('ar')">ع</button>
-    </div>
+<!-- ===== BARRE FLOTTANTE langue + thème ===== -->
+<div class="topbar" id="topbar">
+  <div class="lang-toggle">
+    <button class="lang-btn" id="btnFR" onclick="setLang('fr')">FR</button>
+    <button class="lang-btn" id="btnAR" onclick="setLang('ar')">ع</button>
+  </div>
+  <div class="theme-toggle">
+    <button class="theme-btn t-classic"  id="tb-classic"  onclick="setTheme('classic')"  title="Classique"></button>
+    <button class="theme-btn t-green"    id="tb-green"    onclick="setTheme('green')"    title="Vert"></button>
+    <button class="theme-btn t-bordeaux" id="tb-bordeaux" onclick="setTheme('bordeaux')" title="Bordeaux"></button>
+  </div>
+</div>
+
+<!-- ===== LIGHTBOX ===== -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <span class="lb-close">&times;</span>
+  <img id="lbImg" src="" alt=""/>
+</div>
+
+<!-- ===== BANNER ===== -->
+<div class="banner">
+  <img id="bannerImg" src="" alt="banner"/>
+  <div class="banner-overlay">
+    <div class="banner-title" id="bannerTitle"></div>
+    <div class="banner-sub"   id="bannerSub"></div>
+    <div class="banner-price" id="bannerPrice"></div>
+  </div>
+</div>
+
+<div class="page">
+
+  <div class="section">
+    <div class="section-title"><span class="section-dot"></span><span id="lGalerie">Photos du produit</span></div>
+    <div class="gallery-main"><img id="mainImg" src="" alt="photo" onclick="openLightbox(this.src)"/></div>
+    <div class="gallery-thumbs" id="thumbsWrap"></div>
   </div>
 
-  <h1 id="pageTitle">Confirmation de commande</h1>
-
-  <!-- ===== LOADER INIT ===== -->
-  <div id="initMsg" class="init-msg">Chargement des données...</div>
-
-  <!-- ===== FORMULAIRE ===== -->
-  <div id="formArea" style="display:none">
-
-    <div class="field">
-      <label id="lCodeProduit">Code produit</label>
-      <input type="text" id="codeProduit" readonly tabindex="-1" />
-    </div>
-
-    <div class="row2">
-      <div>
-        <label id="lNom">Nom</label>
-        <input type="text" id="nom" placeholder="Benali" />
-        <div class="err" id="errNom">Champ obligatoire</div>
-      </div>
-      <div>
-        <label id="lPrenom">Prénom</label>
-        <input type="text" id="prenom" placeholder="Ahmed" />
-        <div class="err" id="errPrenom">Champ obligatoire</div>
-      </div>
-    </div>
-
-    <div class="row2">
-      <div>
-        <label id="lTel">Numéro de téléphone</label>
-        <input type="tel" id="tel" placeholder="05 XX XX XX XX" />
-        <div class="err" id="errTel">Numéro invalide (ex: 05xxxxxxxx)</div>
-      </div>
-      <div>
-        <label id="lQte">Quantité</label>
-        <div class="qty-wrap">
-          <button class="qty-btn" onclick="changeQty(-1)" type="button">−</button>
-          <span class="qty-val" id="qtyVal">1</span>
-          <button class="qty-btn" onclick="changeQty(1)" type="button">+</button>
-          <span class="qty-unit" id="qtyUnit">article</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="row2">
-      <div>
-        <label id="lWilaya">Wilaya</label>
-        <select id="wilaya" onchange="onWilaya()">
-          <option value="">-- Sélectionner --</option>
-        </select>
-        <div class="err" id="errWilaya">Champ obligatoire</div>
-      </div>
-      <div>
-        <label id="lCommune">Commune</label>
-        <select id="commune" disabled>
-          <option value="">-- Sélectionner wilaya --</option>
-        </select>
-        <div class="err" id="errCommune">Champ obligatoire</div>
-      </div>
-    </div>
-
-    <div class="field">
-      <label id="lLivraison">Type de livraison</label>
-      <div class="radio-group">
-        <div class="radio-opt" id="opt-domicile" onclick="setLivraison('domicile')">
-          <div class="radio-dot" id="dot-domicile"></div>
-          <span id="txtDomicile">À domicile</span>
-        </div>
-        <div class="radio-opt selected" id="opt-bureau" onclick="setLivraison('bureau')">
-          <div class="radio-dot on" id="dot-bureau"></div>
-          <span id="txtBureau">Au bureau</span>
-        </div>
-      </div>
-    </div>
-
-    <hr>
-
-    <div class="recap">
-      <div class="recap-row">
-        <span id="lPrix">Prix du produit</span>
-        <span id="recapPrix">1 200 DA</span>
-      </div>
-      <div class="recap-row">
-        <span id="lSousTotal">Sous-total</span>
-        <span id="recapSousTotal">1 200 DA</span>
-      </div>
-      <div class="recap-row">
-        <span id="lFraisWrap">Frais de livraison <span class="tag" id="recapTag">domicile</span></span>
-        <span id="recapFrais">— DA</span>
-      </div>
-      <div class="recap-total">
-        <span id="lTotal">Total à payer</span>
-        <span id="recapTotal">— DA</span>
-      </div>
-    </div>
-
-    <div class="err" id="errGlobal" style="margin-bottom:10px">Veuillez remplir tous les champs.</div>
-    <button class="btn-submit" id="btnSubmit" onclick="submit()">Confirmer la commande</button>
-
-  </div>
-  <!-- fin formArea -->
-
-  <!-- ===== SUCCÈS ===== -->
-  <div class="success" id="successArea">
-    <div class="success-icon">
-      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-    </div>
-    <p class="success-title" id="successTitle">Commande confirmée !</p>
-    <p class="success-sub" id="successMsg"></p>
+  <div class="section">
+    <div class="section-title"><span class="section-dot"></span><span id="lDesc">Description</span></div>
+    <p class="desc-text" id="descText"></p>
   </div>
 
-</div><!-- fin card -->
+  <div class="section">
+    <div class="section-title"><span class="section-dot"></span><span id="lCond">Conditions de commande</span></div>
+    <ul class="cond-list" id="condList"></ul>
+  </div>
+
+  <div class="section">
+    <h2 class="form-title"><span class="section-dot"></span><span id="pageTitle">Confirmer ma commande</span></h2>
+
+    <div id="initMsg" class="init-msg">Chargement...</div>
+
+    <div id="formArea" style="display:none">
+
+      <div class="field">
+        <label id="lCode">Code produit</label>
+        <input type="text" id="codeProduit" readonly tabindex="-1"/>
+      </div>
+
+      <div class="row2">
+        <div>
+          <label id="lNom">Nom <span class="req">*</span></label>
+          <input type="text" id="nom" placeholder="Benali"/>
+          <div class="err" id="errNom">Champ obligatoire</div>
+        </div>
+        <div>
+          <label id="lPrenom">Prénom <span class="req">*</span></label>
+          <input type="text" id="prenom" placeholder="Ahmed"/>
+          <div class="err" id="errPrenom">Champ obligatoire</div>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div>
+          <label id="lTel">Téléphone <span class="req">*</span></label>
+          <input type="tel" id="tel" placeholder="05 XX XX XX XX"/>
+          <div class="err" id="errTel">Numéro invalide</div>
+        </div>
+        <div>
+          <label id="lQte">Quantité</label>
+          <div class="qty-wrap">
+            <button class="qty-btn" onclick="changeQty(-1)" type="button">−</button>
+            <span class="qty-val" id="qtyVal">1</span>
+            <button class="qty-btn" onclick="changeQty(1)"  type="button">+</button>
+            <span class="qty-unit" id="qtyUnit">article</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div>
+          <label id="lWilaya">Wilaya <span class="req">*</span></label>
+          <select id="wilaya" onchange="onWilaya()"><option value="">-- Sélectionner --</option></select>
+          <div class="err" id="errWilaya">Champ obligatoire</div>
+        </div>
+        <div>
+          <label id="lCommune">Commune <span class="req">*</span></label>
+          <select id="commune" disabled><option value="">-- Sélectionner wilaya --</option></select>
+          <div class="err" id="errCommune">Champ obligatoire</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label id="lLivraison">Type de livraison</label>
+        <div class="radio-group">
+          <div class="radio-opt" id="opt-domicile" onclick="setLivraison('domicile')">
+            <div class="radio-dot" id="dot-domicile"></div>
+            <span id="txtDomicile">À domicile</span>
+          </div>
+          <div class="radio-opt selected" id="opt-bureau" onclick="setLivraison('bureau')">
+            <div class="radio-dot on" id="dot-bureau"></div>
+            <span id="txtBureau">Au bureau</span>
+          </div>
+        </div>
+      </div>
+
+      <hr>
+
+      <div class="recap">
+        <div class="recap-row"><span id="lPrix">Prix unitaire</span><span id="recapPrix">— DA</span></div>
+        <div class="recap-row"><span id="lSousTotal">Sous-total</span><span id="recapSousTotal">— DA</span></div>
+        <div class="recap-row">
+          <span id="lFraisWrap">Frais de livraison <span class="tag" id="recapTag">bureau</span></span>
+          <span id="recapFrais">— DA</span>
+        </div>
+        <div class="recap-total"><span id="lTotal">Total à payer</span><span id="recapTotal">— DA</span></div>
+      </div>
+
+      <div class="err" id="errGlobal" style="margin-bottom:10px">Veuillez remplir tous les champs obligatoires.</div>
+      <button class="btn-submit" id="btnSubmit" onclick="submit()">Confirmer la commande</button>
+    </div>
+
+    <div class="success" id="successArea">
+      <div class="success-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <p class="success-title" id="successTitle">Commande confirmée !</p>
+      <p class="success-sub"   id="successMsg"></p>
+    </div>
+  </div>
+</div>
 
 <script>
-  /* ============================================================
-     ⚙️  CONFIGURATION — modifie uniquement cette section
-  ============================================================ */
-  const PRIX_PRODUIT = 1200; // Prix fixe du produit en DA
+  /* ================================================================
+   ⚙️  CONFIGURATION — seule section à modifier par produit
+================================================================ */
+const CODE_PRODUIT       = "PRD-00001";
+const PRIX_PRODUIT       = 3500;                      // DA
+const SCRIPT_URL         = "https://script.google.com/macros/s/AKfycby0DcnrubzGBwAue-Ls4mi01w2JxHL3_UJh6LpdGlSdiP5gWFwd3GQZESSjmsfY93yPnQ/exec";
+const LIVRAISON_GRATUITE = false;                     // true = frais offerts
+// Langue par défaut : "fr" ou "ar"
+const LANGUE_DEFAUT      = "fr";
 
-  // Code produit — affiché en lecture seule sur le formulaire
-  const CODE_PRODUIT = "PRD-00001";
+// Thème par défaut : "classic" | "green" | "bordeaux"
+const THEME_DEFAUT       = "classic";
+/* Textes bilingues */
+const PRODUIT = {
+  fr: {
+    nom:         "Pack Trio Inox",
+    sousTitre:   "🔥 LE TRIO IMBATTABLE DE LA SAISON ! 🔥",
+    description: `✨ Pourquoi choisir ce pack ?
 
-  // Colle ici l'URL de ton déploiement Google Apps Script
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby0DcnrubzGBwAue-Ls4mi01w2JxHL3_UJh6LpdGlSdiP5gWFwd3GQZESSjmsfY93yPnQ/exec";
+Qualité Inox Pur : Ne rouille pas, ne change pas de couleur.
 
-  // ✅ Livraison gratuite : true = offerte (frais = 0 DA), false = tarifs normaux
-  const LIVRAISON_GRATUITE = false;
+Style Garanti : Un look assorti pour toutes vos occasions.
 
-  /* Tarifs de livraison par wilaya_id (DA)
-     Ignorés si LIVRAISON_GRATUITE = true
-     domicile = livraison à domicile
-     bureau   = retrait au bureau                              */
-  const TARIFS = {
-    domicile: {
-      1:600,2:450,3:550,4:450,5:450,6:400,7:500,8:600,9:350,10:400,
-      11:700,12:500,13:500,14:500,15:350,16:300,17:550,18:400,19:400,20:500,
-      21:400,22:500,23:400,24:450,25:400,26:400,27:500,28:500,29:500,30:600,
-      31:450,32:600,33:700,34:450,35:350,36:450,37:700,38:500,39:550,40:500,
-      41:450,42:350,43:450,44:400,45:600,46:500,47:600,48:450,49:600,50:700,
-      51:550,52:700,53:700,54:700,55:550,56:700,57:700,58:700,59:550,60:500,
-      61:550,62:550,63:550,64:550,65:550,66:550,67:450,68:550,69:600,
-      default:550
-    },
-    bureau: {
-      1:500,2:350,3:450,4:350,5:350,6:300,7:400,8:500,9:250,10:300,
-      11:600,12:400,13:400,14:400,15:250,16:200,17:450,18:300,19:300,20:400,
-      21:300,22:400,23:300,24:350,25:300,26:300,27:400,28:400,29:400,30:500,
-      31:350,32:500,33:600,34:350,35:250,36:350,37:600,38:400,39:450,40:400,
-      41:350,42:250,43:350,44:300,45:500,46:400,47:500,48:350,49:500,50:600,
-      51:450,52:600,53:600,54:600,55:450,56:600,57:600,58:600,59:450,60:400,
-      61:450,62:450,63:450,64:450,65:450,66:450,67:350,68:450,69:500,
-      default:450
-    }
-  };
-  /* ============================================================
-     Fin de la configuration
-  ============================================================ */
+Prix Choc : Seulement 3500 DA au lieu du prix fort ! 😱
 
-  /* --- Traductions --- */
-  const T = {
-    fr: {
-      pageTitle:'Confirmation de commande',
-      nom:'Nom', prenom:'Prénom', tel:'Numéro de téléphone',
-      wilaya:'Wilaya', commune:'Commune',
-      livraison:'Type de livraison', domicile:'À domicile', bureau:'Au bureau',
-      prix:'Prix du produit', frais:'Frais de livraison', total:'Total à payer',
-      btn:'Confirmer la commande',
-      select:'-- Sélectionner --', selectW:'-- Sélectionner wilaya --',
-      successTitle:'Commande confirmée !',
-      errReq:'Champ obligatoire', errTel:'Numéro invalide (ex: 05xxxxxxxx)',
-      errGlobal:'Veuillez remplir tous les champs.',
-      sending:'Envoi en cours...', errSend:'Erreur d\'envoi. Réessayez.',
-      loading:'Chargement des données...',
-      ph_nom:'Benali', ph_prenom:'Ahmed', ph_tel:'05 XX XX XX XX',
-      qte:'Quantité', qteUnit:'article', sousTotal:'Sous-total',
-      fraisGratuit:'Livraison offerte', codeProduit:'Code produit'
-    },
-    ar: {
-      pageTitle:'تأكيد الطلب',
-      nom:'اللقب', prenom:'الاسم', tel:'رقم الهاتف',
-      wilaya:'الولاية', commune:'البلدية',
-      livraison:'نوع التوصيل', domicile:'توصيل للمنزل', bureau:'توصيل للمكتب',
-      prix:'سعر المنتج', frais:'تكاليف التوصيل', total:'المبلغ الإجمالي',
-      btn:'تأكيد الطلب',
-      select:'-- اختر --', selectW:'-- اختر الولاية أولاً --',
-      successTitle:'تم تأكيد الطلب !',
-      errReq:'هذا الحقل إلزامي', errTel:'رقم الهاتف غير صحيح',
-      errGlobal:'يرجى ملء جميع الحقول.',
-      sending:'جاري الإرسال...', errSend:'خطأ في الإرسال. حاول مجدداً.',
-      loading:'جاري تحميل البيانات...',
-      ph_nom:'بن علي', ph_prenom:'أحمد', ph_tel:'05 XX XX XX XX',
-      qte:'الكمية', qteUnit:'قطعة', sousTotal:'المجموع الجزئي',
-      fraisGratuit:'التوصيل مجاني', codeProduit:'رمز المنتج'
-    }
-  };
+🚚 Livraison rapide disponible sur les 58 wilayas.
+⚠️ Stock très limité ! Premier arrivé, premier servi.`,
+    conditions: [
+      "Livraison sous 3 à 5 jours ouvrables.",
+      "Paiement à la livraison uniquement.",
+      "Produit garanti authentique et de qualité.",
+      "Pour toute question, contactez-nous au 0770827656."
+    ]
+  },
+  ar: {
+    nom:         "Pack Trio Inox",
+    sousTitre:   "🌟 تألق مع Pack Trio Inox الحر! 🌟",
+    description: `🌟 تألق مع Pack Trio Inox الحر! 🌟
 
-  let lang = 'fr';
-  let livraison = 'bureau';
-  let quantite = 1;
-  let allCommunes = [];
-  let allWilayas  = [];
+✅ ساعة + سلسلة + سوار.
+✅ معدن إينوكس حر: ما يصدي ما يكحال.
+✅ السعر: 3500 دينار فقط!
+✅ التوصيل سريع لـ 58 ولاية.
 
-  const $ = id => document.getElementById(id);
-
-  function fmt(n) { return n.toLocaleString('fr-DZ') + ' DA'; }
-
-  function getTarif(wId) {
-    if (LIVRAISON_GRATUITE) return 0;
-    const t = TARIFS[livraison];
-    return t[parseInt(wId)] || t.default;
+⚡ الكمية على وشك الانتهاء!`,
+    conditions: [
+      "التوصيل في غضون 3 إلى 5 أيام عمل.",
+      "الدفع عند الاستلام فقط.",
+      "المنتج مضمون وأصلي.",
+      "للتواصل: 0770827656"
+    ]
   }
+};
 
-  function changeQty(delta) {
-    quantite = Math.max(1, quantite + delta);
-    $('qtyVal').textContent = quantite;
-    updateRecap();
+/* Photos — remplace par tes vraies images
+   Chemin local : "images/photo1.jpg"
+   URL externe  : "https://..."
+   La 1ère image = banner + photo principale        */
+const IMAGES = [
+  "images/photo1.jpg",
+  "images/photo2.jpg",
+  "images/photo3.jpg",
+  "images/photo4.jpg"
+];
+/* ================================================================
+   Fin configuration — ne pas modifier en dessous
+================================================================ */
+
+const TARIFS = {
+  domicile:{1:600,2:450,3:550,4:450,5:450,6:400,7:500,8:600,9:350,10:400,11:700,12:500,13:500,14:500,15:350,16:300,17:550,18:400,19:400,20:500,21:400,22:500,23:400,24:450,25:400,26:400,27:500,28:500,29:500,30:600,31:450,32:600,33:700,34:450,35:350,36:450,37:700,38:500,39:550,40:500,41:450,42:350,43:450,44:400,45:600,46:500,47:600,48:450,49:600,50:700,51:550,52:700,53:700,54:700,55:550,56:700,57:700,58:700,59:550,60:500,61:550,62:550,63:550,64:550,65:550,66:550,67:450,68:550,69:600,default:550},
+  bureau:  {1:500,2:350,3:450,4:350,5:350,6:300,7:400,8:500,9:250,10:300,11:600,12:400,13:400,14:400,15:250,16:200,17:450,18:300,19:300,20:400,21:300,22:400,23:300,24:350,25:300,26:300,27:400,28:400,29:400,30:500,31:350,32:500,33:600,34:350,35:250,36:350,37:600,38:400,39:450,40:400,41:350,42:250,43:350,44:300,45:500,46:400,47:500,48:350,49:500,50:600,51:450,52:600,53:600,54:600,55:450,56:600,57:600,58:600,59:450,60:400,61:450,62:450,63:450,64:450,65:450,66:450,67:350,68:450,69:500,default:450}
+};
+
+const T = {
+  fr:{
+    pageTitle:'Confirmer ma commande',
+    lGalerie:'Photos du produit', lDesc:'Description', lCond:'Conditions de commande',
+    nom:'Nom', prenom:'Prénom', tel:'Téléphone', wilaya:'Wilaya', commune:'Commune',
+    livraison:'Type de livraison', domicile:'À domicile', bureau:'Au bureau',
+    prix:'Prix unitaire', sousTotal:'Sous-total', frais:'Frais de livraison', total:'Total à payer',
+    btn:'Confirmer la commande', codeProduit:'Code produit',
+    select:'-- Sélectionner --', selectW:'-- Sélectionner wilaya --',
+    successTitle:'Commande confirmée !',
+    errReq:'Champ obligatoire', errTel:'Numéro invalide (ex: 05xxxxxxxx)',
+    errGlobal:'Veuillez remplir tous les champs obligatoires.',
+    sending:'Envoi en cours...', errSend:"Erreur d'envoi. Réessayez.",
+    loading:'Chargement des données...', qte:'Quantité', qteUnit:'article',
+    fraisGratuit:'Livraison offerte',
+    ph_nom:'Benali', ph_prenom:'Ahmed', ph_tel:'05 XX XX XX XX'
+  },
+  ar:{
+    pageTitle:'تأكيد طلبي',
+    lGalerie:'صور المنتج', lDesc:'الوصف', lCond:'شروط الطلب',
+    nom:'اللقب', prenom:'الاسم', tel:'رقم الهاتف', wilaya:'الولاية', commune:'البلدية',
+    livraison:'نوع التوصيل', domicile:'توصيل للمنزل', bureau:'توصيل للمكتب',
+    prix:'سعر الوحدة', sousTotal:'المجموع الجزئي', frais:'تكاليف التوصيل', total:'المبلغ الإجمالي',
+    btn:'تأكيد الطلب', codeProduit:'رمز المنتج',
+    select:'-- اختر --', selectW:'-- اختر الولاية أولاً --',
+    successTitle:'تم تأكيد الطلب !',
+    errReq:'هذا الحقل إلزامي', errTel:'رقم الهاتف غير صحيح',
+    errGlobal:'يرجى ملء جميع الحقول الإلزامية.',
+    sending:'جاري الإرسال...', errSend:'خطأ في الإرسال. حاول مجدداً.',
+    loading:'جاري تحميل البيانات...', qte:'الكمية', qteUnit:'قطعة',
+    fraisGratuit:'التوصيل مجاني',
+    ph_nom:'بن علي', ph_prenom:'أحمد', ph_tel:'05 XX XX XX XX'
   }
+};
 
-  /* ---- Langue ---- */
-  function setLang(l) {
-    lang = l;
-    const isAR = l === 'ar';
-    document.documentElement.setAttribute('lang', l);
-    document.body.setAttribute('dir', isAR ? 'rtl' : 'ltr');
-    $('btnFR').classList.toggle('active', l === 'fr');
-    $('btnAR').classList.toggle('active', l === 'ar');
+let lang = LANGUE_DEFAUT;
+let livraison = 'bureau', quantite = 1;
+let allCommunes = [], allWilayas = [];
+const $ = id => document.getElementById(id);
+const fmt = n => n.toLocaleString('fr-DZ') + ' DA';
 
-    const t = T[l];
-    $('pageTitle').textContent      = t.pageTitle;
-    $('lNom').textContent           = t.nom;
-    $('lPrenom').textContent        = t.prenom;
-    $('lTel').textContent           = t.tel;
-    $('lWilaya').textContent        = t.wilaya;
-    $('lCommune').textContent       = t.commune;
-    $('lLivraison').textContent     = t.livraison;
-    $('txtDomicile').textContent    = t.domicile;
-    $('txtBureau').textContent      = t.bureau;
-    $('lPrix').textContent          = t.prix;
-    $('lTotal').textContent         = t.total;
-    $('btnSubmit').textContent      = t.btn;
-    $('lQte').textContent           = t.qte;
-    $('qtyUnit').textContent        = t.qteUnit;
-    $('lSousTotal').textContent     = t.sousTotal;
-    $('lCodeProduit').textContent   = t.codeProduit;
-    $('nom').placeholder            = t.ph_nom;
-    $('prenom').placeholder         = t.ph_prenom;
-    $('tel').placeholder            = t.ph_tel;
-    $('errNom').textContent         = t.errReq;
-    $('errPrenom').textContent      = t.errReq;
-    $('errTel').textContent         = t.errTel;
-    $('errWilaya').textContent      = t.errReq;
-    $('errCommune').textContent     = t.errReq;
-    $('errGlobal').textContent      = t.errGlobal;
-    $('initMsg').textContent        = t.loading;
-    updateTagLabel();
-    rebuildWilayas();
-    const wId = $('wilaya').value;
-    if (wId) rebuildCommunes(wId);
-    else {
-      $('commune').innerHTML = `<option value="">${t.selectW}</option>`;
-      $('commune').disabled = true;
-    }
-    updateRecap();
+/* ---- Thème ---- */
+function setTheme(t) {
+  document.body.className = 'theme-' + t;
+  ['classic','green','bordeaux'].forEach(n =>
+    $('tb-'+n).classList.toggle('active', n === t)
+  );
+}
+
+/* ---- Galerie ---- */
+function buildGallery() {
+  if (!IMAGES.length) return;
+  $('bannerImg').src = $('mainImg').src = IMAGES[0];
+  const w = $('thumbsWrap'); w.innerHTML = '';
+  IMAGES.forEach((src, i) => {
+    const d = document.createElement('div');
+    d.className = 'thumb' + (i === 0 ? ' active' : '');
+    d.innerHTML = `<img src="${src}" alt=""/>`;
+    d.onclick = () => selectImg(i);
+    w.appendChild(d);
+  });
+}
+function selectImg(i) {
+  $('mainImg').src = IMAGES[i];
+  document.querySelectorAll('.thumb').forEach((t, j) => t.classList.toggle('active', j === i));
+}
+function openLightbox(src) { $('lbImg').src = src; $('lightbox').classList.add('open'); }
+function closeLightbox() { $('lightbox').classList.remove('open'); }
+
+/* ---- Produit textes ---- */
+function buildProduit() {
+  const p = PRODUIT[lang];
+  document.title = $('bannerTitle').textContent = p.nom;
+  $('bannerSub').textContent  = p.sousTitre;
+  $('bannerPrice').textContent = fmt(PRIX_PRODUIT);
+  $('descText').textContent   = p.description;
+  const ul = $('condList'); ul.innerHTML = '';
+  p.conditions.forEach(c => {
+    const li = document.createElement('li');
+    li.innerHTML = `<span class="cond-dot"></span><span>${c}</span>`;
+    ul.appendChild(li);
+  });
+}
+
+/* ---- Langue ---- */
+function setLang(l) {
+  lang = l;
+  const isAR = l === 'ar';
+  document.documentElement.setAttribute('lang', l);
+  document.body.setAttribute('dir', isAR ? 'rtl' : 'ltr');
+  $('btnFR').classList.toggle('active', l === 'fr');
+  $('btnAR').classList.toggle('active', l === 'ar');
+  const t = T[l];
+  $('pageTitle').textContent    = t.pageTitle;
+  $('lGalerie').textContent     = t.lGalerie;
+  $('lDesc').textContent        = t.lDesc;
+  $('lCond').textContent        = t.lCond;
+  $('lCode').textContent        = t.codeProduit;
+  $('lNom').innerHTML           = t.nom    + ' <span class="req">*</span>';
+  $('lPrenom').innerHTML        = t.prenom + ' <span class="req">*</span>';
+  $('lTel').innerHTML           = t.tel    + ' <span class="req">*</span>';
+  $('lWilaya').innerHTML        = t.wilaya + ' <span class="req">*</span>';
+  $('lCommune').innerHTML       = t.commune+ ' <span class="req">*</span>';
+  $('lLivraison').textContent   = t.livraison;
+  $('txtDomicile').textContent  = t.domicile;
+  $('txtBureau').textContent    = t.bureau;
+  $('lPrix').textContent        = t.prix;
+  $('lSousTotal').textContent   = t.sousTotal;
+  $('lTotal').textContent       = t.total;
+  $('btnSubmit').textContent    = t.btn;
+  $('lQte').textContent         = t.qte;
+  $('qtyUnit').textContent      = t.qteUnit;
+  $('nom').placeholder          = t.ph_nom;
+  $('prenom').placeholder       = t.ph_prenom;
+  $('tel').placeholder          = t.ph_tel;
+  $('errNom').textContent       = t.errReq;
+  $('errPrenom').textContent    = t.errReq;
+  $('errTel').textContent       = t.errTel;
+  $('errWilaya').textContent    = t.errReq;
+  $('errCommune').textContent   = t.errReq;
+  $('errGlobal').textContent    = t.errGlobal;
+  $('initMsg').textContent      = t.loading;
+  updateTagLabel(); buildProduit(); rebuildWilayas();
+  const wId = $('wilaya').value;
+  if (wId) rebuildCommunes(wId);
+  else { $('commune').innerHTML = `<option value="">${t.selectW}</option>`; $('commune').disabled = true; }
+  updateRecap();
+}
+
+function updateTagLabel() {
+  const t = T[lang], tag = $('recapTag'), wrap = $('lFraisWrap');
+  tag.textContent = livraison === 'domicile' ? t.domicile : t.bureau;
+  wrap.textContent = t.frais + ' '; wrap.appendChild(tag);
+}
+
+/* ---- Livraison ---- */
+function setLivraison(type) {
+  livraison = type;
+  ['domicile','bureau'].forEach(t => {
+    $('opt-'+t).classList.toggle('selected', t === type);
+    $('dot-'+t).classList.toggle('on', t === type);
+  });
+  updateTagLabel(); updateRecap();
+}
+
+function changeQty(d) { quantite = Math.max(1, quantite + d); $('qtyVal').textContent = quantite; updateRecap(); }
+
+function getTarif(wId) {
+  if (LIVRAISON_GRATUITE) return 0;
+  const t = TARIFS[livraison]; return t[parseInt(wId)] || t.default;
+}
+
+function updateRecap() {
+  const wId = $('wilaya').value;
+  const frais = LIVRAISON_GRATUITE ? 0 : (wId ? getTarif(wId) : null);
+  const st = PRIX_PRODUIT * quantite; const t = T[lang];
+  $('recapPrix').textContent      = fmt(PRIX_PRODUIT) + ' × ' + quantite;
+  $('recapSousTotal').textContent = fmt(st);
+  if (LIVRAISON_GRATUITE) {
+    $('recapFrais').textContent = t.fraisGratuit; $('recapFrais').style.color = '#2e7d32';
+    $('recapTotal').textContent = fmt(st);
+  } else {
+    $('recapFrais').style.color = '';
+    $('recapFrais').textContent = frais !== null ? fmt(frais) : '— DA';
+    $('recapTotal').textContent = frais !== null ? fmt(st + frais) : '— DA';
   }
+}
 
-  function updateTagLabel() {
-    const t = T[lang];
-    const tag = $('recapTag');
-    tag.textContent = livraison === 'domicile' ? t.domicile : t.bureau;
-    const wrap = $('lFraisWrap');
-    wrap.textContent = t.frais + ' ';
-    wrap.appendChild(tag);
-  }
+function rebuildWilayas() {
+  const t = T[lang], sel = $('wilaya'), cur = sel.value;
+  sel.innerHTML = `<option value="">${t.select}</option>`;
+  allWilayas.forEach(w => {
+    const o = document.createElement('option');
+    o.value = w.id;
+    o.textContent = String(w.code||w.id).padStart(2,'0') + ' - ' + w.name + (w.ar_name ? ' - '+w.ar_name : '');
+    sel.appendChild(o);
+  });
+  if (cur) sel.value = cur;
+}
 
-  /* ---- Livraison ---- */
-  function setLivraison(type) {
-    livraison = type;
-    ['domicile', 'bureau'].forEach(t => {
-      $('opt-' + t).classList.toggle('selected', t === type);
-      $('dot-' + t).classList.toggle('on', t === type);
-    });
-    updateTagLabel();
-    updateRecap();
-  }
+function rebuildCommunes(wId) {
+  const t = T[lang], sel = $('commune'), cur = sel.value;
+  const list = allCommunes.filter(c => String(c.wilaya_id) === String(wId)).sort((a,b) => a.name.localeCompare(b.name,'fr'));
+  sel.innerHTML = `<option value="">${t.select}</option>`;
+  list.forEach(c => {
+    const o = document.createElement('option');
+    o.value = c.name; o.textContent = c.name + (c.ar_name ? ' - '+c.ar_name : '');
+    sel.appendChild(o);
+  });
+  sel.disabled = false; if (cur) sel.value = cur;
+}
 
-  /* ---- Recap ---- */
-  function updateRecap() {
-    const wId = $('wilaya').value;
-    const frais = LIVRAISON_GRATUITE ? 0 : (wId ? getTarif(wId) : null);
-    const sousTotal = PRIX_PRODUIT * quantite;
-    const t = T[lang];
-    $('recapPrix').textContent      = fmt(PRIX_PRODUIT) + ' × ' + quantite;
-    $('recapSousTotal').textContent = fmt(sousTotal);
-    if (LIVRAISON_GRATUITE) {
-      $('recapFrais').textContent = t.fraisGratuit;
-      $('recapFrais').style.color = '#2e7d32';
-      $('recapTotal').textContent = fmt(sousTotal);
-    } else {
-      $('recapFrais').style.color = '';
-      $('recapFrais').textContent = frais !== null ? fmt(frais) : '— DA';
-      $('recapTotal').textContent = frais !== null ? fmt(sousTotal + frais) : '— DA';
-    }
-  }
+function onWilaya() {
+  const wId = $('wilaya').value, t = T[lang];
+  if (!wId) { $('commune').innerHTML = `<option value="">${t.selectW}</option>`; $('commune').disabled = true; updateRecap(); return; }
+  rebuildCommunes(wId); updateRecap();
+}
 
-  /* ---- Wilayas ---- */
-  function rebuildWilayas() {
-    const t = T[lang];
-    const sel = $('wilaya');
-    const current = sel.value;
-    sel.innerHTML = `<option value="">${t.select}</option>`;
-    allWilayas.forEach(w => {
-      const o = document.createElement('option');
-      o.value = w.id;
-      const num = String(w.code || w.id).padStart(2, '0');
-      const ar  = w.ar_name || '';
-      o.textContent = num + ' - ' + w.name + (ar ? ' - ' + ar : '');
-      sel.appendChild(o);
-    });
-    if (current) sel.value = current;
-  }
+function showErr(id, v) { $(id).style.display = v ? 'block' : 'none'; }
 
-  /* ---- Communes ---- */
-  function rebuildCommunes(wId) {
-    const t = T[lang];
-    const sel = $('commune');
-    const current = sel.value;
-    const filtered = allCommunes
-      .filter(c => String(c.wilaya_id) === String(wId))
-      .sort((a, b) => a.name.localeCompare(b.name, 'fr'));
-    sel.innerHTML = `<option value="">${t.select}</option>`;
-    filtered.forEach(c => {
-      const o = document.createElement('option');
-      o.value = c.name;
-      const ar = c.ar_name || '';
-      o.textContent = c.name + (ar ? ' - ' + ar : '');
-      sel.appendChild(o);
-    });
-    sel.disabled = false;
-    if (current) sel.value = current;
-  }
+async function submit() {
+  const nom = $('nom').value.trim(), prenom = $('prenom').value.trim();
+  const tel = $('tel').value.trim().replace(/\s/g,'');
+  const wSel = $('wilaya'), wId = wSel.value;
+  const wText = wSel.options[wSel.selectedIndex]?.text || '';
+  const commune = $('commune').value, t = T[lang];
+  let ok = true;
+  showErr('errNom',    !nom);     if (!nom)    ok = false;
+  showErr('errPrenom', !prenom);  if (!prenom) ok = false;
+  const telOk = /^0[5-7]\d{8}$/.test(tel);
+  showErr('errTel',    !telOk);   if (!telOk)  ok = false;
+  showErr('errWilaya', !wId);     if (!wId)    ok = false;
+  showErr('errCommune',!commune); if (!commune)ok = false;
+  showErr('errGlobal', !ok);
+  if (!ok) return;
+  const frais = LIVRAISON_GRATUITE ? 0 : getTarif(wId);
+  const sousTotal = PRIX_PRODUIT * quantite, total = sousTotal + frais;
+  const payload = { code_produit:CODE_PRODUIT, nom, prenom, telephone:tel, wilaya:wText, commune, quantite, livraison, prix_unitaire:PRIX_PRODUIT, frais, total };
+  const btn = $('btnSubmit'); btn.disabled = true; btn.innerHTML = `<span class="spinner"></span>${t.sending}`;
+  try {
+    await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+    $('formArea').style.display = 'none'; $('successArea').style.display = 'block';
+    $('successTitle').textContent = t.successTitle;
+    const fl = LIVRAISON_GRATUITE ? t.fraisGratuit : fmt(frais);
+    $('successMsg').innerHTML = `<strong>${prenom} ${nom}</strong><br>${tel}<br>${commune} — ${wText}<br>${t.qte} : <strong>${quantite} ${t.qteUnit}</strong><br>${t.livraison} : <strong>${livraison==='domicile'?t.domicile:t.bureau}</strong><br>${t.frais} : ${fl}<br><br><span style="font-size:16px;font-weight:700;color:var(--c-primary)">${t.total} : ${fmt(total)}</span>`;
+  } catch(e) { alert(t.errSend); btn.disabled = false; btn.textContent = t.btn; }
+}
 
-  function onWilaya() {
-    const wId = $('wilaya').value;
-    const t = T[lang];
-    if (!wId) {
-      $('commune').innerHTML = `<option value="">${t.selectW}</option>`;
-      $('commune').disabled = true;
-      updateRecap();
-      return;
-    }
-    rebuildCommunes(wId);
-    updateRecap();
-  }
-
-  /* ---- Validation ---- */
-  function showErr(id, visible) {
-    $(id).style.display = visible ? 'block' : 'none';
-  }
-
-  /* ---- SUBMIT — envoi vers Google Sheets ---- */
-  async function submit() {
-    const nom     = $('nom').value.trim();
-    const prenom  = $('prenom').value.trim();
-    const tel     = $('tel').value.trim().replace(/\s/g, '');
-    const wSel    = $('wilaya');
-    const wId     = wSel.value;
-    const wText   = wSel.options[wSel.selectedIndex]?.text || '';
-    const commune = $('commune').value;
-    const t       = T[lang];
-
-    let ok = true;
-    showErr('errNom',     !nom);     if (!nom)     ok = false;
-    showErr('errPrenom',  !prenom);  if (!prenom)  ok = false;
-    const telOk = /^0[5-7]\d{8}$/.test(tel);
-    showErr('errTel',     !telOk);   if (!telOk)   ok = false;
-    showErr('errWilaya',  !wId);     if (!wId)     ok = false;
-    showErr('errCommune', !commune); if (!commune) ok = false;
-    showErr('errGlobal',  !ok);
-    if (!ok) return;
-
-    const frais     = LIVRAISON_GRATUITE ? 0 : getTarif(wId);
-    const sousTotal = PRIX_PRODUIT * quantite;
-    const total     = sousTotal + frais;
-
-    /* Données à envoyer */
-    const payload = {
-      code_produit:  CODE_PRODUIT,
-      nom,
-      prenom,
-      telephone: tel,
-      wilaya:    wText,
-      commune,
-      quantite,
-      livraison,
-      prix_unitaire: PRIX_PRODUIT,
-      frais,
-      total
-    };
-
-    /* UI — état chargement */
-    const btn = $('btnSubmit');
-    btn.disabled = true;
-    btn.innerHTML = `<span class="spinner"></span>${t.sending}`;
-
-    try {
-      await fetch(SCRIPT_URL, {
-        method:  'POST',
-        mode:    'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(payload)
-      });
-
-      $('formArea').style.display    = 'none';
-      $('successArea').style.display = 'block';
-      $('successTitle').textContent  = t.successTitle;
-      const fraisLabel = LIVRAISON_GRATUITE ? t.fraisGratuit : fmt(frais);
-      $('successMsg').innerHTML =
-        `<strong>${prenom} ${nom}</strong><br>
-         ${tel}<br>
-         ${commune} — ${wText}<br>
-         ${t.qte} : <strong>${quantite} ${t.qteUnit}</strong><br>
-         ${t.livraison} : <strong>${livraison === 'domicile' ? t.domicile : t.bureau}</strong><br>
-         ${t.frais} : ${fraisLabel}<br><br>
-         <span style="font-size:15px;font-weight:600;color:#111">${t.total} : ${fmt(total)}</span>`;
-
-    } catch (err) {
-      alert(t.errSend);
-      btn.disabled = false;
-      btn.textContent = t.btn;
-    }
-  }
-
-  /* ---- Chargement initial des données ---- */
-  (async function init() {
-    try {
-      const [wRes, cRes] = await Promise.all([
-        fetch('https://raw.githubusercontent.com/Kenandarabeh/algeria-wilayas-communes-2026/main/wilayas.json'),
-        fetch('https://raw.githubusercontent.com/Kenandarabeh/algeria-wilayas-communes-2026/main/communes.json')
-      ]);
-      allWilayas  = (await wRes.json()).sort((a, b) => parseInt(a.id) - parseInt(b.id));
-      allCommunes = await cRes.json();
-
-      $('initMsg').style.display  = 'none';
-      $('formArea').style.display = 'block';
-      $('codeProduit').value      = CODE_PRODUIT;
-      rebuildWilayas();
-    } catch (e) {
-      $('initMsg').textContent = 'Erreur de chargement. Vérifiez votre connexion.';
-    }
-  })();
+(async function init() {
+  setTheme(THEME_DEFAUT);
+  setLang(LANGUE_DEFAUT);
+  buildGallery();
+  try {
+    const [wR, cR] = await Promise.all([
+      fetch('https://raw.githubusercontent.com/Kenandarabeh/algeria-wilayas-communes-2026/main/wilayas.json'),
+      fetch('https://raw.githubusercontent.com/Kenandarabeh/algeria-wilayas-communes-2026/main/communes.json')
+    ]);
+    allWilayas  = (await wR.json()).sort((a,b) => parseInt(a.id)-parseInt(b.id));
+    allCommunes = await cR.json();
+    $('initMsg').style.display  = 'none';
+    $('formArea').style.display = 'block';
+    $('codeProduit').value      = CODE_PRODUIT;
+    rebuildWilayas(); updateRecap();
+  } catch(e) { $('initMsg').textContent = 'Erreur de chargement. Vérifiez votre connexion.'; }
+})();
 </script>
 </body>
 </html>
