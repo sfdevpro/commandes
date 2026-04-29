@@ -225,12 +225,12 @@
         </div>
         <div>
           <label>Prix du produit (DA)</label>
-          <input type="number" id="cPrix" value="1200" min="0" step="50"/>
+          <input type="number" id="cPrix" value="3500" min="0" step="50"/>
         </div>
       </div>
       <div class="field">
         <label>URL Google Apps Script</label>
-        <input type="text" id="cScript" placeholder="https://script.google.com/macros/s/.../exec"/>
+        <input type="text" id="cScript" value="https://script.google.com/macros/s/AKfycby0DcnrubzGBwAue-Ls4mi01w2JxHL3_UJh6LpdGlSdiP5gWFwd3GQZESSjmsfY93yPnQ/exec"/>
         <p class="hint">Colle ici l'URL de ton déploiement Apps Script</p>
       </div>
       <div class="row2">
@@ -281,15 +281,24 @@
     <div class="section-body">
       <div class="field">
         <label>Nom du produit (FR)</label>
-        <input type="text" id="cNomFR" placeholder="Ex: Crème hydratante bio"/>
+        <input type="text" id="cNomFR" value="Pack Trio Inox"/>
       </div>
       <div class="field">
         <label>Sous-titre (FR)</label>
-        <input type="text" id="cSubFR" placeholder="Ex: 100% naturel, fabriqué en Algérie"/>
+        <input type="text" id="cSubFR" value="🔥 LE TRIO IMBATTABLE DE LA SAISON ! 🔥"/>
       </div>
       <div class="field">
         <label>Description (FR)</label>
-        <textarea id="cDescFR" placeholder="Décrivez votre produit..."></textarea>
+        <textarea id="cDescFR">✨ Pourquoi choisir ce pack ?
+
+Qualité Inox Pur : Ne rouille pas, ne change pas de couleur.
+
+Style Garanti : Un look assorti pour toutes vos occasions.
+
+Prix Choc : Seulement 3500 DA au lieu du prix fort ! 😱
+
+🚚 Livraison rapide disponible sur les 58 wilayas.
+⚠️ Stock très limité ! Premier arrivé, premier servi.</textarea>
       </div>
       <div class="field">
         <label>Conditions de commande (FR)</label>
@@ -305,15 +314,22 @@
     <div class="section-body" dir="rtl">
       <div class="field">
         <label>اسم المنتج (AR)</label>
-        <input type="text" id="cNomAR" placeholder="مثال: كريم ترطيب طبيعي"/>
+        <input type="text" id="cNomAR" value="Pack Trio Inox"/>
       </div>
       <div class="field">
         <label>العنوان الفرعي (AR)</label>
-        <input type="text" id="cSubAR" placeholder="مثال: 100% طبيعي، صنع في الجزائر"/>
+        <input type="text" id="cSubAR" value="🌟 تألق مع Pack Trio Inox الحر! 🌟"/>
       </div>
       <div class="field">
         <label>الوصف (AR)</label>
-        <textarea id="cDescAR" placeholder="اكتب وصف منتجك..."></textarea>
+        <textarea id="cDescAR">🌟 تألق مع Pack Trio Inox الحر! 🌟
+
+✅ ساعة + سلسلة + سوار.
+✅ معدن إينوكس حر: ما يصدي ما يكحال.
+✅ السعر: 3500 دينار فقط!
+✅ التوصيل سريع لـ 58 ولاية.
+
+⚡ الكمية على وشك الانتهاء!</textarea>
       </div>
       <div class="field">
         <label>شروط الطلب (AR)</label>
@@ -504,12 +520,15 @@ ${imgsStr}
   addImg('images/photo1.jpg');
   addImg('images/photo2.jpg');
   addImg('images/photo3.jpg');
+  addImg('images/photo4.jpg');
   addCond('FR', 'Livraison sous 3 à 5 jours ouvrables.');
   addCond('FR', 'Paiement à la livraison uniquement.');
   addCond('FR', 'Produit garanti authentique et de qualité.');
+  addCond('FR', 'Pour toute question, contactez-nous au 0770827656.');
   addCond('AR', 'التوصيل في غضون 3 إلى 5 أيام عمل.');
   addCond('AR', 'الدفع عند الاستلام فقط.');
   addCond('AR', 'المنتج مضمون وأصلي.');
+  addCond('AR', 'للتواصل: 0770827656');
 </script>
 
 </body>
