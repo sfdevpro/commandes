@@ -189,7 +189,8 @@
     [dir=rtl] .recap-row,[dir=rtl] .recap-total { flex-direction:row-reverse; }
     [dir=rtl] .cond-list li,[dir=rtl] .section-title,[dir=rtl] .form-title { flex-direction:row-reverse; }
     [dir=rtl] .topbar { right:auto; left:12px; }
-
+    [dir=rtl] .recap-row span:last-child,
+    [dir=rtl] .recap-total span:last-child { direction:ltr; unicode-bidi:embed; }
     /* LIGHTBOX */
     .lightbox { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:999; align-items:center; justify-content:center; }
     .lightbox.open { display:flex; }
