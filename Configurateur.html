@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Configurateur de page produit</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: #f2f2f2;
+      color: #111;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .cfg {
+      width: 100%;
+      max-width: 660px;
+    }
+
+    h1 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #111;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section {
+      background: #fff;
+      border: 1px solid #e8e8e8;
+      border-radius: 14px;
+      margin-bottom: 14px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+
+    .section-head {
+      background: #f7f7f7;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #555;
+      border-bottom: 1px solid #eee;
+    }
+
+    .section-body { padding: 16px; }
+
+    .field { margin-bottom: 13px; }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 13px; }
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
+
+    input[type=text], input[type=number], select, textarea {
+      width: 100%;
+      padding: 8px 11px;
+      font-size: 13px;
+      color: #111;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #fff;
+      outline: none;
+      transition: border-color 0.15s;
+      font-family: inherit;
+    }
+    input:focus, select:focus, textarea:focus { border-color: #111; }
+    textarea { height: 80px; resize: vertical; }
+
+    .hint {
+      font-size: 11px;
+      color: #999;
+      margin-top: 3px;
+    }
+
+    /* Radio cards */
+    .radio-row { display: flex; gap: 8px; margin-top: 4px; }
+    .radio-card {
+      flex: 1; border: 1px solid #ddd; border-radius: 8px;
+      padding: 8px 10px; cursor: pointer; font-size: 12px; color: #111;
+      display: flex; align-items: center; gap: 7px;
+      transition: background 0.1s; user-select: none;
+    }
+    .radio-card:hover { background: #f9f9f9; }
+    .radio-card.sel { border: 2px solid #111; background: #f5f5f5; }
+    .rdot {
+      width: 12px; height: 12px; border-radius: 50%;
+      border: 1.5px solid #ccc; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .rdot.on { border-color: #111; }
+    .rdot.on::after {
+      content: ''; width: 6px; height: 6px;
+      border-radius: 50%; background: #111; display: block;
+    }
+
+    /* Theme cards */
+    .theme-row { display: flex; gap: 8px; margin-top: 4px; }
+    .theme-card {
+      flex: 1; border: 1px solid #ddd; border-radius: 8px;
+      padding: 10px 8px; cursor: pointer; text-align: center;
+      font-size: 12px; color: #111; transition: background 0.1s; user-select: none;
+    }
+    .theme-card:hover { background: #f9f9f9; }
+    .theme-card.sel { border: 2px solid #111; background: #f5f5f5; }
+    .theme-dot { width: 20px; height: 20px; border-radius: 50%; margin: 0 auto 5px; }
+    .t-classic  { background: #111; }
+    .t-green    { background: #0d6e4f; }
+    .t-bordeaux { background: #7b1d1d; }
+
+    /* Toggle */
+    .toggle-wrap { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+    .toggle {
+      width: 40px; height: 22px; border-radius: 11px;
+      background: #ccc; position: relative; cursor: pointer;
+      transition: background 0.2s; flex-shrink: 0;
+    }
+    .toggle.on { background: #2e7d32; }
+    .toggle::after {
+      content: ''; position: absolute; top: 3px; left: 3px;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: #fff; transition: left 0.2s;
+    }
+    .toggle.on::after { left: 21px; }
+    .toggle-label { font-size: 13px; color: #111; }
+
+    /* Images */
+    .img-entry { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
+    .img-entry input { flex: 1; font-size: 12px; }
+    .img-rm {
+      width: 28px; height: 28px; border: 1px solid #ddd; border-radius: 6px;
+      background: #fff; cursor: pointer; color: #888; font-size: 16px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .img-rm:hover { background: #f5f5f5; }
+    .img-add {
+      font-size: 12px; color: #888; background: transparent;
+      border: 1px dashed #ddd; border-radius: 8px;
+      padding: 6px 12px; cursor: pointer; width: 100%;
+      text-align: left; margin-top: 4px; font-family: inherit;
+    }
+    .img-add:hover { background: #f9f9f9; }
+
+    /* Conditions */
+    .cond-row { display: flex; gap: 6px; align-items: flex-start; margin-bottom: 6px; }
+    .cond-row textarea { height: 44px; font-size: 12px; resize: none; }
+    .cond-add {
+      font-size: 12px; color: #888; background: transparent;
+      border: 1px dashed #ddd; border-radius: 8px;
+      padding: 6px 12px; cursor: pointer; width: 100%;
+      text-align: left; margin-top: 4px; font-family: inherit;
+    }
+    .cond-add:hover { background: #f9f9f9; }
+
+    /* Generate button */
+    .gen-btn {
+      width: 100%; padding: 12px; font-size: 15px; font-weight: 700;
+      background: #111; color: #fff; border: none;
+      border-radius: 10px; cursor: pointer; margin-top: 4px;
+      font-family: inherit; transition: opacity 0.15s;
+    }
+    .gen-btn:hover { opacity: 0.85; }
+
+    /* Output */
+    .output-wrap { margin-top: 16px; }
+    .output-label {
+      font-size: 12px; font-weight: 600; color: #666;
+      margin-bottom: 6px; display: flex;
+      justify-content: space-between; align-items: center;
+    }
+    .code-box {
+      background: #1e1e1e; border-radius: 10px;
+      padding: 14px 16px; font-family: 'Courier New', monospace;
+      font-size: 12px; color: #d4d4d4; white-space: pre;
+      overflow-x: auto; line-height: 1.7;
+      max-height: 400px; overflow-y: auto;
+    }
+    .copy-btn {
+      font-size: 12px; padding: 5px 14px;
+      border: 1px solid #ddd; border-radius: 8px;
+      background: #111; color: #fff;
+      cursor: pointer; font-family: inherit;
+    }
+    .copy-btn:hover { opacity: 0.8; }
+    .notice {
+      font-size: 12px; color: #2e7d32; background: #e6f4ea;
+      border-radius: 8px; padding: 6px 12px;
+      margin-top: 8px; display: none;
+    }
+
+    @media (max-width: 480px) {
+      .row2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="cfg">
+
+  <h1>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Configurateur de page produit
+  </h1>
+
+  <!-- Section 1 : Paramètres généraux -->
+  <div class="section">
+    <div class="section-head">Paramètres généraux</div>
+    <div class="section-body">
+      <div class="row2">
+        <div>
+          <label>Code produit</label>
+          <input type="text" id="cCode" value="PRD-00001" placeholder="PRD-00001"/>
+        </div>
+        <div>
+          <label>Prix du produit (DA)</label>
+          <input type="number" id="cPrix" value="1200" min="0" step="50"/>
+        </div>
+      </div>
+      <div class="field">
+        <label>URL Google Apps Script</label>
+        <input type="text" id="cScript" placeholder="https://script.google.com/macros/s/.../exec"/>
+        <p class="hint">Colle ici l'URL de ton déploiement Apps Script</p>
+      </div>
+      <div class="row2">
+        <div>
+          <label>Langue par défaut</label>
+          <div class="radio-row">
+            <div class="radio-card sel" id="rl-fr" onclick="setRadio('lang','fr')">
+              <div class="rdot on" id="rd-fr"></div> Français
+            </div>
+            <div class="radio-card" id="rl-ar" onclick="setRadio('lang','ar')">
+              <div class="rdot" id="rd-ar"></div> العربية
+            </div>
+          </div>
+        </div>
+        <div>
+          <label>Livraison gratuite</label>
+          <div class="toggle-wrap">
+            <div class="toggle" id="tglLiv" onclick="toggleSwitch('liv')"></div>
+            <span class="toggle-label" id="lblLiv">Non — tarifs normaux</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 2 : Thème -->
+  <div class="section">
+    <div class="section-head">Thème visuel</div>
+    <div class="section-body">
+      <label>Thème par défaut</label>
+      <div class="theme-row">
+        <div class="theme-card sel" id="th-classic" onclick="setTheme('classic')">
+          <div class="theme-dot t-classic"></div>Classique
+        </div>
+        <div class="theme-card" id="th-green" onclick="setTheme('green')">
+          <div class="theme-dot t-green"></div>Vert
+        </div>
+        <div class="theme-card" id="th-bordeaux" onclick="setTheme('bordeaux')">
+          <div class="theme-dot t-bordeaux"></div>Bordeaux
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 3 : Textes FR -->
+  <div class="section">
+    <div class="section-head">Textes du produit — Français</div>
+    <div class="section-body">
+      <div class="field">
+        <label>Nom du produit (FR)</label>
+        <input type="text" id="cNomFR" placeholder="Ex: Crème hydratante bio"/>
+      </div>
+      <div class="field">
+        <label>Sous-titre (FR)</label>
+        <input type="text" id="cSubFR" placeholder="Ex: 100% naturel, fabriqué en Algérie"/>
+      </div>
+      <div class="field">
+        <label>Description (FR)</label>
+        <textarea id="cDescFR" placeholder="Décrivez votre produit..."></textarea>
+      </div>
+      <div class="field">
+        <label>Conditions de commande (FR)</label>
+        <div id="condsFR"></div>
+        <button class="cond-add" onclick="addCond('FR')">+ Ajouter une condition</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 4 : Textes AR -->
+  <div class="section">
+    <div class="section-head">نصوص المنتج — العربية</div>
+    <div class="section-body" dir="rtl">
+      <div class="field">
+        <label>اسم المنتج (AR)</label>
+        <input type="text" id="cNomAR" placeholder="مثال: كريم ترطيب طبيعي"/>
+      </div>
+      <div class="field">
+        <label>العنوان الفرعي (AR)</label>
+        <input type="text" id="cSubAR" placeholder="مثال: 100% طبيعي، صنع في الجزائر"/>
+      </div>
+      <div class="field">
+        <label>الوصف (AR)</label>
+        <textarea id="cDescAR" placeholder="اكتب وصف منتجك..."></textarea>
+      </div>
+      <div class="field">
+        <label>شروط الطلب (AR)</label>
+        <div id="condsAR"></div>
+        <button class="cond-add" onclick="addCond('AR')">+ إضافة شرط</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 5 : Photos -->
+  <div class="section">
+    <div class="section-head">Photos du produit (1 à 6)</div>
+    <div class="section-body">
+      <p class="hint" style="margin-bottom:10px">
+        Chemin local : <code>images/photo1.jpg</code> &nbsp;|&nbsp;
+        URL externe : <code>https://...</code><br/>
+        La 1ère image est utilisée comme banner principal.
+      </p>
+      <div id="imgsWrap"></div>
+      <button class="img-add" onclick="addImg()">+ Ajouter une photo</button>
+    </div>
+  </div>
+
+  <button class="gen-btn" onclick="generate()">Générer le bloc CONFIG</button>
+
+  <!-- Output -->
+  <div class="output-wrap" id="outputWrap" style="display:none">
+    <div class="output-label">
+      <span>Bloc CONFIG généré — remplace le bloc CONFIG dans ton index.html</span>
+      <button class="copy-btn" onclick="copyCode()">Copier</button>
+    </div>
+    <div class="code-box" id="codeOut"></div>
+    <div class="notice" id="copyNotice">Copié dans le presse-papiers !</div>
+  </div>
+
+</div>
+
+<script>
+  let selLang = 'fr';
+  let selTheme = 'classic';
+  let livGratuite = false;
+
+  function setRadio(group, val) {
+    if (group === 'lang') {
+      selLang = val;
+      ['fr','ar'].forEach(v => {
+        document.getElementById('rl-'+v).classList.toggle('sel', v === val);
+        document.getElementById('rd-'+v).classList.toggle('on', v === val);
+      });
+    }
+  }
+
+  function setTheme(t) {
+    selTheme = t;
+    ['classic','green','bordeaux'].forEach(v =>
+      document.getElementById('th-'+v).classList.toggle('sel', v === t)
+    );
+  }
+
+  function toggleSwitch(id) {
+    if (id === 'liv') {
+      livGratuite = !livGratuite;
+      document.getElementById('tglLiv').classList.toggle('on', livGratuite);
+      document.getElementById('lblLiv').textContent = livGratuite
+        ? 'Oui — livraison offerte'
+        : 'Non — tarifs normaux';
+    }
+  }
+
+  function addImg(val = '') {
+    const wrap = document.getElementById('imgsWrap');
+    if (wrap.children.length >= 6) return;
+    const row = document.createElement('div');
+    row.className = 'img-entry';
+    row.innerHTML = `
+      <input type="text" placeholder="images/photo${wrap.children.length + 1}.jpg ou https://..." value="${val}"/>
+      <button class="img-rm" onclick="this.parentElement.remove()">×</button>`;
+    wrap.appendChild(row);
+  }
+
+  function addCond(lang, val = '') {
+    const wrap = document.getElementById('conds' + lang);
+    const row = document.createElement('div');
+    row.className = 'cond-row';
+    row.innerHTML = `
+      <textarea placeholder="Condition...">${val}</textarea>
+      <button class="img-rm" onclick="this.parentElement.remove()" style="margin-top:4px">×</button>`;
+    wrap.appendChild(row);
+  }
+
+  function getImgs() {
+    return Array.from(document.querySelectorAll('#imgsWrap .img-entry input'))
+      .map(i => i.value.trim()).filter(Boolean);
+  }
+
+  function getConds(lang) {
+    return Array.from(document.querySelectorAll('#conds' + lang + ' textarea'))
+      .map(t => t.value.trim()).filter(Boolean);
+  }
+
+  function esc(s)    { return s.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\${/g, '\\${'); }
+  function escStr(s) { return s.replace(/\\/g, '\\\\').replace(/"/g, '\\"'); }
+
+  function generate() {
+    const code    = document.getElementById('cCode').value.trim()    || 'PRD-00001';
+    const prix    = parseInt(document.getElementById('cPrix').value)  || 1200;
+    const script  = document.getElementById('cScript').value.trim()  || 'COLLE_ICI_URL_APPS_SCRIPT';
+    const nomFR   = document.getElementById('cNomFR').value.trim()   || 'Nom du produit';
+    const subFR   = document.getElementById('cSubFR').value.trim()   || 'Sous-titre accrocheur';
+    const descFR  = document.getElementById('cDescFR').value.trim()  || 'Description du produit...';
+    const nomAR   = document.getElementById('cNomAR').value.trim()   || 'اسم المنتج';
+    const subAR   = document.getElementById('cSubAR').value.trim()   || 'وصف جذاب';
+    const descAR  = document.getElementById('cDescAR').value.trim()  || 'وصف المنتج...';
+    const condsFR = getConds('FR');
+    const condsAR = getConds('AR');
+    const imgs    = getImgs();
+
+    const condsFRstr = condsFR.length
+      ? condsFR.map(c => `      "${escStr(c)}"`).join(',\n')
+      : `      "Livraison sous 3 à 5 jours ouvrables.",\n      "Paiement à la livraison uniquement."`;
+
+    const condsARstr = condsAR.length
+      ? condsAR.map(c => `      "${escStr(c)}"`).join(',\n')
+      : `      "التوصيل في غضون 3 إلى 5 أيام عمل.",\n      "الدفع عند الاستلام فقط."`;
+
+    const imgsStr = imgs.length
+      ? imgs.map(i => `  "${escStr(i)}"`).join(',\n')
+      : `  "images/photo1.jpg",\n  "images/photo2.jpg"`;
+
+    const output =
+`/* ================================================================
+   ⚙️  CONFIGURATION — seule section à modifier par produit
+================================================================ */
+const CODE_PRODUIT       = "${escStr(code)}";
+const PRIX_PRODUIT       = ${prix};                       // DA
+const SCRIPT_URL         = "${escStr(script)}";
+const LIVRAISON_GRATUITE = ${livGratuite};                // true = frais offerts
+
+// Langue par défaut : "fr" ou "ar"
+const LANGUE_DEFAUT      = "${selLang}";
+
+// Thème par défaut : "classic" | "green" | "bordeaux"
+const THEME_DEFAUT       = "${selTheme}";
+
+/* Textes bilingues du produit */
+const PRODUIT = {
+  fr: {
+    nom:         "${escStr(nomFR)}",
+    sousTitre:   "${escStr(subFR)}",
+    description: \`${esc(descFR)}\`,
+    conditions: [
+${condsFRstr}
+    ]
+  },
+  ar: {
+    nom:         "${escStr(nomAR)}",
+    sousTitre:   "${escStr(subAR)}",
+    description: \`${esc(descAR)}\`,
+    conditions: [
+${condsARstr}
+    ]
+  }
+};
+
+/* Photos du produit */
+const IMAGES = [
+${imgsStr}
+];
+/* ================================================================
+   Fin configuration — ne pas modifier en dessous
+================================================================ */`;
+
+    document.getElementById('codeOut').textContent = output;
+    document.getElementById('outputWrap').style.display = 'block';
+    document.getElementById('outputWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function copyCode() {
+    const text = document.getElementById('codeOut').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const n = document.getElementById('copyNotice');
+      n.style.display = 'block';
+      setTimeout(() => n.style.display = 'none', 2500);
+    });
+  }
+
+  /* Valeurs par défaut au chargement */
+  addImg('images/photo1.jpg');
+  addImg('images/photo2.jpg');
+  addImg('images/photo3.jpg');
+  addCond('FR', 'Livraison sous 3 à 5 jours ouvrables.');
+  addCond('FR', 'Paiement à la livraison uniquement.');
+  addCond('FR', 'Produit garanti authentique et de qualité.');
+  addCond('AR', 'التوصيل في غضون 3 إلى 5 أيام عمل.');
+  addCond('AR', 'الدفع عند الاستلام فقط.');
+  addCond('AR', 'المنتج مضمون وأصلي.');
+</script>
+
+</body>
+</html>
