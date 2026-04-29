@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Formulaire de commande</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: #f5f5f5;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+      padding: 2rem;
+      width: 100%;
+      max-width: 520px;
+    }
+
+    /* --- lang toggle --- */
+    .lang-bar { display: flex; justify-content: flex-end; margin-bottom: 1.5rem; }
+    .lang-toggle { display: flex; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; }
+    .lang-btn {
+      padding: 6px 18px; font-size: 13px; font-weight: 500;
+      background: transparent; border: none; cursor: pointer; color: #888;
+    }
+    .lang-btn.active { background: #111; color: #fff; }
+
+    /* --- typography --- */
+    h1 { font-size: 18px; font-weight: 600; color: #111; margin-bottom: 1.5rem; }
+    label { display: block; font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 500; }
+
+    /* --- fields --- */
+    .field { margin-bottom: 14px; }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+
+    input[type=text], input[type=tel], select {
+      width: 100%; padding: 9px 12px; font-size: 14px; color: #111;
+      border: 1px solid #ddd; border-radius: 8px; background: #fff;
+      outline: none; transition: border-color 0.15s;
+      font-family: inherit;
+    }
+    input:focus, select:focus { border-color: #111; }
+    select:disabled { background: #f9f9f9; color: #aaa; }
+
+    /* --- radio livraison --- */
+    .radio-group { display: flex; gap: 10px; margin-top: 4px; }
+    .radio-opt {
+      flex: 1; border: 1px solid #ddd; border-radius: 8px;
+      padding: 10px 12px; cursor: pointer; display: flex;
+      align-items: center; gap: 8px; font-size: 13px; color: #111;
+      transition: background 0.12s, border-color 0.12s;
+      user-select: none;
+    }
+    .radio-opt:hover { background: #f9f9f9; }
+    .radio-opt.selected { border: 2px solid #111; background: #f5f5f5; }
+    .radio-dot {
+      width: 14px; height: 14px; border-radius: 50%;
+      border: 2px solid #ccc; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .radio-dot.on { border-color: #111; }
+    .radio-dot.on::after {
+      content: ''; width: 7px; height: 7px;
+      border-radius: 50%; background: #111; display: block;
+    }
+
+    /* --- divider --- */
+    hr { border: none; border-top: 1px solid #eee; margin: 1.25rem 0; }
+
+    /* --- recap --- */
+    .recap { background: #f7f7f7; border-radius: 12px; padding: 14px 16px; margin-bottom: 1.25rem; }
+    .recap-row { display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; color: #666; }
+    .recap-row span:last-child { color: #111; font-weight: 500; }
+    .recap-total {
+      display: flex; justify-content: space-between;
+      font-size: 15px; font-weight: 600; padding-top: 10px;
+      margin-top: 6px; border-top: 1px solid #e0e0e0; color: #111;
+    }
+    .tag {
+      font-size: 11px; background: #e8f0fe; color: #1a56db;
+      padding: 2px 8px; border-radius: 20px;
+      display: inline-block; margin: 0 4px; vertical-align: middle;
+    }
+
+    /* --- quantité --- */
+    .qty-wrap { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+    .qty-btn {
+      width: 34px; height: 34px; border-radius: 8px; border: 1px solid #ddd;
+      background: #fff; font-size: 18px; cursor: pointer; color: #111;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.12s; flex-shrink: 0; font-family: inherit;
+    }
+    .qty-btn:hover { background: #f0f0f0; }
+    .qty-val {
+      font-size: 15px; font-weight: 600; color: #111;
+      min-width: 32px; text-align: center;
+    }
+    .qty-unit { font-size: 12px; color: #888; }
+
+    input[type=text][readonly], input[type=tel][readonly] {
+      background: #f7f7f7; color: #888; cursor: default;
+      border-color: #eee; user-select: none;
+    }
+
+    /* --- error --- */
+    .err { font-size: 12px; color: #e53935; margin-top: 4px; display: none; }
+
+    /* --- button --- */
+    .btn-submit {
+      width: 100%; padding: 12px; font-size: 14px; font-weight: 600;
+      background: #111; color: #fff; border: none;
+      border-radius: 10px; cursor: pointer; transition: opacity 0.15s;
+      font-family: inherit;
+    }
+    .btn-submit:hover { opacity: 0.85; }
+    .btn-submit:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    /* --- loader spinner --- */
+    .spinner {
+      display: inline-block; width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #fff; border-radius: 50%;
+      animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* --- init loader --- */
+    .init-msg { text-align: center; padding: 3rem 0; color: #888; font-size: 14px; }
+
+    /* --- success --- */
+    .success { text-align: center; padding: 2rem 0; display: none; }
+    .success-icon {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: #e6f4ea; display: flex; align-items: center;
+      justify-content: center; margin: 0 auto 1rem;
+    }
+    .success-icon svg { width: 24px; height: 24px; stroke: #2e7d32; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .success-title { font-size: 17px; font-weight: 600; margin-bottom: 8px; color: #111; }
+    .success-sub { font-size: 13px; color: #555; line-height: 1.9; }
+
+    /* --- RTL --- */
+    [dir=rtl] { font-family: 'Segoe UI', Tahoma, 'Arabic Typesetting', 'Noto Naskh Arabic', sans-serif; }
+    [dir=rtl] .lang-bar { justify-content: flex-start; }
+    [dir=rtl] .recap-row, [dir=rtl] .recap-total { flex-direction: row-reverse; }
+
+    /* --- responsive --- */
+    @media (max-width: 480px) {
+      .row2 { grid-template-columns: 1fr; }
+      .card { padding: 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="card">
+
+  <!-- ===== LANGUE ===== -->
+  <div class="lang-bar">
+    <div class="lang-toggle">
+      <button class="lang-btn active" id="btnFR" onclick="setLang('fr')">FR</button>
+      <button class="lang-btn" id="btnAR" onclick="setLang('ar')">ع</button>
+    </div>
+  </div>
+
+  <h1 id="pageTitle">Confirmation de commande</h1>
+
+  <!-- ===== LOADER INIT ===== -->
+  <div id="initMsg" class="init-msg">Chargement des données...</div>
+
+  <!-- ===== FORMULAIRE ===== -->
+  <div id="formArea" style="display:none">
+
+    <div class="field">
+      <label id="lCodeProduit">Code produit</label>
+      <input type="text" id="codeProduit" readonly tabindex="-1" />
+    </div>
+
+    <div class="row2">
+      <div>
+        <label id="lNom">Nom</label>
+        <input type="text" id="nom" placeholder="Benali" />
+        <div class="err" id="errNom">Champ obligatoire</div>
+      </div>
+      <div>
+        <label id="lPrenom">Prénom</label>
+        <input type="text" id="prenom" placeholder="Ahmed" />
+        <div class="err" id="errPrenom">Champ obligatoire</div>
+      </div>
+    </div>
+
+    <div class="row2">
+      <div>
+        <label id="lTel">Numéro de téléphone</label>
+        <input type="tel" id="tel" placeholder="05 XX XX XX XX" />
+        <div class="err" id="errTel">Numéro invalide (ex: 05xxxxxxxx)</div>
+      </div>
+      <div>
+        <label id="lQte">Quantité</label>
+        <div class="qty-wrap">
+          <button class="qty-btn" onclick="changeQty(-1)" type="button">−</button>
+          <span class="qty-val" id="qtyVal">1</span>
+          <button class="qty-btn" onclick="changeQty(1)" type="button">+</button>
+          <span class="qty-unit" id="qtyUnit">article</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="row2">
+      <div>
+        <label id="lWilaya">Wilaya</label>
+        <select id="wilaya" onchange="onWilaya()">
+          <option value="">-- Sélectionner --</option>
+        </select>
+        <div class="err" id="errWilaya">Champ obligatoire</div>
+      </div>
+      <div>
+        <label id="lCommune">Commune</label>
+        <select id="commune" disabled>
+          <option value="">-- Sélectionner wilaya --</option>
+        </select>
+        <div class="err" id="errCommune">Champ obligatoire</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label id="lLivraison">Type de livraison</label>
+      <div class="radio-group">
+        <div class="radio-opt" id="opt-domicile" onclick="setLivraison('domicile')">
+          <div class="radio-dot" id="dot-domicile"></div>
+          <span id="txtDomicile">À domicile</span>
+        </div>
+        <div class="radio-opt selected" id="opt-bureau" onclick="setLivraison('bureau')">
+          <div class="radio-dot on" id="dot-bureau"></div>
+          <span id="txtBureau">Au bureau</span>
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <div class="recap">
+      <div class="recap-row">
+        <span id="lPrix">Prix du produit</span>
+        <span id="recapPrix">1 200 DA</span>
+      </div>
+      <div class="recap-row">
+        <span id="lSousTotal">Sous-total</span>
+        <span id="recapSousTotal">1 200 DA</span>
+      </div>
+      <div class="recap-row">
+        <span id="lFraisWrap">Frais de livraison <span class="tag" id="recapTag">domicile</span></span>
+        <span id="recapFrais">— DA</span>
+      </div>
+      <div class="recap-total">
+        <span id="lTotal">Total à payer</span>
+        <span id="recapTotal">— DA</span>
+      </div>
+    </div>
+
+    <div class="err" id="errGlobal" style="margin-bottom:10px">Veuillez remplir tous les champs.</div>
+    <button class="btn-submit" id="btnSubmit" onclick="submit()">Confirmer la commande</button>
+
+  </div>
+  <!-- fin formArea -->
+
+  <!-- ===== SUCCÈS ===== -->
+  <div class="success" id="successArea">
+    <div class="success-icon">
+      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <p class="success-title" id="successTitle">Commande confirmée !</p>
+    <p class="success-sub" id="successMsg"></p>
+  </div>
+
+</div><!-- fin card -->
+
+<script>
+  /* ============================================================
+     ⚙️  CONFIGURATION — modifie uniquement cette section
+  ============================================================ */
+  const PRIX_PRODUIT = 1200; // Prix fixe du produit en DA
+
+  // Code produit — affiché en lecture seule sur le formulaire
+  const CODE_PRODUIT = "PRD-00001";
+
+  // Colle ici l'URL de ton déploiement Google Apps Script
+  const SCRIPT_URL = "COLLE_ICI_URL_APPS_SCRIPT";
+
+  // ✅ Livraison gratuite : true = offerte (frais = 0 DA), false = tarifs normaux
+  const LIVRAISON_GRATUITE = false;
+
+  /* Tarifs de livraison par wilaya_id (DA)
+     Ignorés si LIVRAISON_GRATUITE = true
+     domicile = livraison à domicile
+     bureau   = retrait au bureau                              */
+  const TARIFS = {
+    domicile: {
+      1:600,2:450,3:550,4:450,5:450,6:400,7:500,8:600,9:350,10:400,
+      11:700,12:500,13:500,14:500,15:350,16:300,17:550,18:400,19:400,20:500,
+      21:400,22:500,23:400,24:450,25:400,26:400,27:500,28:500,29:500,30:600,
+      31:450,32:600,33:700,34:450,35:350,36:450,37:700,38:500,39:550,40:500,
+      41:450,42:350,43:450,44:400,45:600,46:500,47:600,48:450,49:600,50:700,
+      51:550,52:700,53:700,54:700,55:550,56:700,57:700,58:700,59:550,60:500,
+      61:550,62:550,63:550,64:550,65:550,66:550,67:450,68:550,69:600,
+      default:550
+    },
+    bureau: {
+      1:500,2:350,3:450,4:350,5:350,6:300,7:400,8:500,9:250,10:300,
+      11:600,12:400,13:400,14:400,15:250,16:200,17:450,18:300,19:300,20:400,
+      21:300,22:400,23:300,24:350,25:300,26:300,27:400,28:400,29:400,30:500,
+      31:350,32:500,33:600,34:350,35:250,36:350,37:600,38:400,39:450,40:400,
+      41:350,42:250,43:350,44:300,45:500,46:400,47:500,48:350,49:500,50:600,
+      51:450,52:600,53:600,54:600,55:450,56:600,57:600,58:600,59:450,60:400,
+      61:450,62:450,63:450,64:450,65:450,66:450,67:350,68:450,69:500,
+      default:450
+    }
+  };
+  /* ============================================================
+     Fin de la configuration
+  ============================================================ */
+
+  /* --- Traductions --- */
+  const T = {
+    fr: {
+      pageTitle:'Confirmation de commande',
+      nom:'Nom', prenom:'Prénom', tel:'Numéro de téléphone',
+      wilaya:'Wilaya', commune:'Commune',
+      livraison:'Type de livraison', domicile:'À domicile', bureau:'Au bureau',
+      prix:'Prix du produit', frais:'Frais de livraison', total:'Total à payer',
+      btn:'Confirmer la commande',
+      select:'-- Sélectionner --', selectW:'-- Sélectionner wilaya --',
+      successTitle:'Commande confirmée !',
+      errReq:'Champ obligatoire', errTel:'Numéro invalide (ex: 05xxxxxxxx)',
+      errGlobal:'Veuillez remplir tous les champs.',
+      sending:'Envoi en cours...', errSend:'Erreur d\'envoi. Réessayez.',
+      loading:'Chargement des données...',
+      ph_nom:'Benali', ph_prenom:'Ahmed', ph_tel:'05 XX XX XX XX',
+      qte:'Quantité', qteUnit:'article', sousTotal:'Sous-total',
+      fraisGratuit:'Livraison offerte', codeProduit:'Code produit'
+    },
+    ar: {
+      pageTitle:'تأكيد الطلب',
+      nom:'اللقب', prenom:'الاسم', tel:'رقم الهاتف',
+      wilaya:'الولاية', commune:'البلدية',
+      livraison:'نوع التوصيل', domicile:'توصيل للمنزل', bureau:'توصيل للمكتب',
+      prix:'سعر المنتج', frais:'تكاليف التوصيل', total:'المبلغ الإجمالي',
+      btn:'تأكيد الطلب',
+      select:'-- اختر --', selectW:'-- اختر الولاية أولاً --',
+      successTitle:'تم تأكيد الطلب !',
+      errReq:'هذا الحقل إلزامي', errTel:'رقم الهاتف غير صحيح',
+      errGlobal:'يرجى ملء جميع الحقول.',
+      sending:'جاري الإرسال...', errSend:'خطأ في الإرسال. حاول مجدداً.',
+      loading:'جاري تحميل البيانات...',
+      ph_nom:'بن علي', ph_prenom:'أحمد', ph_tel:'05 XX XX XX XX',
+      qte:'الكمية', qteUnit:'قطعة', sousTotal:'المجموع الجزئي',
+      fraisGratuit:'التوصيل مجاني', codeProduit:'رمز المنتج'
+    }
+  };
+
+  let lang = 'fr';
+  let livraison = 'bureau';
+  let quantite = 1;
+  let allCommunes = [];
+  let allWilayas  = [];
+
+  const $ = id => document.getElementById(id);
+
+  function fmt(n) { return n.toLocaleString('fr-DZ') + ' DA'; }
+
+  function getTarif(wId) {
+    if (LIVRAISON_GRATUITE) return 0;
+    const t = TARIFS[livraison];
+    return t[parseInt(wId)] || t.default;
+  }
+
+  function changeQty(delta) {
+    quantite = Math.max(1, quantite + delta);
+    $('qtyVal').textContent = quantite;
+    updateRecap();
+  }
+
+  /* ---- Langue ---- */
+  function setLang(l) {
+    lang = l;
+    const isAR = l === 'ar';
+    document.documentElement.setAttribute('lang', l);
+    document.body.setAttribute('dir', isAR ? 'rtl' : 'ltr');
+    $('btnFR').classList.toggle('active', l === 'fr');
+    $('btnAR').classList.toggle('active', l === 'ar');
+
+    const t = T[l];
+    $('pageTitle').textContent      = t.pageTitle;
+    $('lNom').textContent           = t.nom;
+    $('lPrenom').textContent        = t.prenom;
+    $('lTel').textContent           = t.tel;
+    $('lWilaya').textContent        = t.wilaya;
+    $('lCommune').textContent       = t.commune;
+    $('lLivraison').textContent     = t.livraison;
+    $('txtDomicile').textContent    = t.domicile;
+    $('txtBureau').textContent      = t.bureau;
+    $('lPrix').textContent          = t.prix;
+    $('lTotal').textContent         = t.total;
+    $('btnSubmit').textContent      = t.btn;
+    $('lQte').textContent           = t.qte;
+    $('qtyUnit').textContent        = t.qteUnit;
+    $('lSousTotal').textContent     = t.sousTotal;
+    $('lCodeProduit').textContent   = t.codeProduit;
+    $('nom').placeholder            = t.ph_nom;
+    $('prenom').placeholder         = t.ph_prenom;
+    $('tel').placeholder            = t.ph_tel;
+    $('errNom').textContent         = t.errReq;
+    $('errPrenom').textContent      = t.errReq;
+    $('errTel').textContent         = t.errTel;
+    $('errWilaya').textContent      = t.errReq;
+    $('errCommune').textContent     = t.errReq;
+    $('errGlobal').textContent      = t.errGlobal;
+    $('initMsg').textContent        = t.loading;
+    updateTagLabel();
+    rebuildWilayas();
+    const wId = $('wilaya').value;
+    if (wId) rebuildCommunes(wId);
+    else {
+      $('commune').innerHTML = `<option value="">${t.selectW}</option>`;
+      $('commune').disabled = true;
+    }
+    updateRecap();
+  }
+
+  function updateTagLabel() {
+    const t = T[lang];
+    const tag = $('recapTag');
+    tag.textContent = livraison === 'domicile' ? t.domicile : t.bureau;
+    const wrap = $('lFraisWrap');
+    wrap.textContent = t.frais + ' ';
+    wrap.appendChild(tag);
+  }
+
+  /* ---- Livraison ---- */
+  function setLivraison(type) {
+    livraison = type;
+    ['domicile', 'bureau'].forEach(t => {
+      $('opt-' + t).classList.toggle('selected', t === type);
+      $('dot-' + t).classList.toggle('on', t === type);
+    });
+    updateTagLabel();
+    updateRecap();
+  }
+
+  /* ---- Recap ---- */
+  function updateRecap() {
+    const wId = $('wilaya').value;
+    const frais = LIVRAISON_GRATUITE ? 0 : (wId ? getTarif(wId) : null);
+    const sousTotal = PRIX_PRODUIT * quantite;
+    const t = T[lang];
+    $('recapPrix').textContent      = fmt(PRIX_PRODUIT) + ' × ' + quantite;
+    $('recapSousTotal').textContent = fmt(sousTotal);
+    if (LIVRAISON_GRATUITE) {
+      $('recapFrais').textContent = t.fraisGratuit;
+      $('recapFrais').style.color = '#2e7d32';
+      $('recapTotal').textContent = fmt(sousTotal);
+    } else {
+      $('recapFrais').style.color = '';
+      $('recapFrais').textContent = frais !== null ? fmt(frais) : '— DA';
+      $('recapTotal').textContent = frais !== null ? fmt(sousTotal + frais) : '— DA';
+    }
+  }
+
+  /* ---- Wilayas ---- */
+  function rebuildWilayas() {
+    const t = T[lang];
+    const sel = $('wilaya');
+    const current = sel.value;
+    sel.innerHTML = `<option value="">${t.select}</option>`;
+    allWilayas.forEach(w => {
+      const o = document.createElement('option');
+      o.value = w.id;
+      const num = String(w.code || w.id).padStart(2, '0');
+      const ar  = w.ar_name || '';
+      o.textContent = num + ' - ' + w.name + (ar ? ' - ' + ar : '');
+      sel.appendChild(o);
+    });
+    if (current) sel.value = current;
+  }
+
+  /* ---- Communes ---- */
+  function rebuildCommunes(wId) {
+    const t = T[lang];
+    const sel = $('commune');
+    const current = sel.value;
+    const filtered = allCommunes
+      .filter(c => String(c.wilaya_id) === String(wId))
+      .sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+    sel.innerHTML = `<option value="">${t.select}</option>`;
+    filtered.forEach(c => {
+      const o = document.createElement('option');
+      o.value = c.name;
+      const ar = c.ar_name || '';
+      o.textContent = c.name + (ar ? ' - ' + ar : '');
+      sel.appendChild(o);
+    });
+    sel.disabled = false;
+    if (current) sel.value = current;
+  }
+
+  function onWilaya() {
+    const wId = $('wilaya').value;
+    const t = T[lang];
+    if (!wId) {
+      $('commune').innerHTML = `<option value="">${t.selectW}</option>`;
+      $('commune').disabled = true;
+      updateRecap();
+      return;
+    }
+    rebuildCommunes(wId);
+    updateRecap();
+  }
+
+  /* ---- Validation ---- */
+  function showErr(id, visible) {
+    $(id).style.display = visible ? 'block' : 'none';
+  }
+
+  /* ---- SUBMIT — envoi vers Google Sheets ---- */
+  async function submit() {
+    const nom     = $('nom').value.trim();
+    const prenom  = $('prenom').value.trim();
+    const tel     = $('tel').value.trim().replace(/\s/g, '');
+    const wSel    = $('wilaya');
+    const wId     = wSel.value;
+    const wText   = wSel.options[wSel.selectedIndex]?.text || '';
+    const commune = $('commune').value;
+    const t       = T[lang];
+
+    let ok = true;
+    showErr('errNom',     !nom);     if (!nom)     ok = false;
+    showErr('errPrenom',  !prenom);  if (!prenom)  ok = false;
+    const telOk = /^0[5-7]\d{8}$/.test(tel);
+    showErr('errTel',     !telOk);   if (!telOk)   ok = false;
+    showErr('errWilaya',  !wId);     if (!wId)     ok = false;
+    showErr('errCommune', !commune); if (!commune) ok = false;
+    showErr('errGlobal',  !ok);
+    if (!ok) return;
+
+    const frais     = LIVRAISON_GRATUITE ? 0 : getTarif(wId);
+    const sousTotal = PRIX_PRODUIT * quantite;
+    const total     = sousTotal + frais;
+
+    /* Données à envoyer */
+    const payload = {
+      code_produit:  CODE_PRODUIT,
+      nom,
+      prenom,
+      telephone: tel,
+      wilaya:    wText,
+      commune,
+      quantite,
+      livraison,
+      prix_unitaire: PRIX_PRODUIT,
+      frais,
+      total
+    };
+
+    /* UI — état chargement */
+    const btn = $('btnSubmit');
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner"></span>${t.sending}`;
+
+    try {
+      await fetch(SCRIPT_URL, {
+        method:  'POST',
+        mode:    'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(payload)
+      });
+
+      $('formArea').style.display    = 'none';
+      $('successArea').style.display = 'block';
+      $('successTitle').textContent  = t.successTitle;
+      const fraisLabel = LIVRAISON_GRATUITE ? t.fraisGratuit : fmt(frais);
+      $('successMsg').innerHTML =
+        `<strong>${prenom} ${nom}</strong><br>
+         ${tel}<br>
+         ${commune} — ${wText}<br>
+         ${t.qte} : <strong>${quantite} ${t.qteUnit}</strong><br>
+         ${t.livraison} : <strong>${livraison === 'domicile' ? t.domicile : t.bureau}</strong><br>
+         ${t.frais} : ${fraisLabel}<br><br>
+         <span style="font-size:15px;font-weight:600;color:#111">${t.total} : ${fmt(total)}</span>`;
+
+    } catch (err) {
+      alert(t.errSend);
+      btn.disabled = false;
+      btn.textContent = t.btn;
+    }
+  }
+
+  /* ---- Chargement initial des données ---- */
+  (async function init() {
+    try {
+      const [wRes, cRes] = await Promise.all([
+        fetch('https://raw.githubusercontent.com/Kenandarabeh/algeria-wilayas-communes-2026/main/wilayas.json'),
+        fetch('https://raw.githubusercontent.com/Kenandarabeh/algeria-wilayas-communes-2026/main/communes.json')
+      ]);
+      allWilayas  = (await wRes.json()).sort((a, b) => parseInt(a.id) - parseInt(b.id));
+      allCommunes = await cRes.json();
+
+      $('initMsg').style.display  = 'none';
+      $('formArea').style.display = 'block';
+      $('codeProduit').value      = CODE_PRODUIT;
+      rebuildWilayas();
+    } catch (e) {
+      $('initMsg').textContent = 'Erreur de chargement. Vérifiez votre connexion.';
+    }
+  })();
+</script>
+</body>
+</html>
